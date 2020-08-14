@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Authorize</title>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
+    
+  </head>
+  <body>
+    
+    <button type="button" class="mod-primary">Click to authorize</button>
+    
+    <!-- We'll use this code block to show the response from the Trello API -->
+    <code id="codeBlock">
+    </code>
+
+    
+    <!-- 
+      We're going to use client.js to help us make requests to Trello's API.
+      client.js is not the same as the client library for Power-Up's. client.js
+      is a helper library that is a wrapper for the API. It relies on jquery's
+      XHR methods, so we need to bring in jquery first
+    -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    
+    <!-- Don't forget to add your API key into the script tag for client.js! -->
+    <script src="https://trello.com/1/client.js?key=your_key_here"></script>
+    
+    <!-- And because we're ALSO doing Power-Up-related things, we still need the Power-Up client library -->
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    
+    <script>
+    
+      $(document).ready(function() {
+        
+        $("code").hide();
+        
+        // Initialize the Power-Up client library and include your app name and API key
+        var t = window.TrelloPowerUp.iframe({
+          appKey: 'your_key_here',
+          appName: 'My Trello App'
+        });
+
+        let success = (response) => {
+          $("code").html(JSON.stringify(response, null, 2));
+          $("code").show();
+        }
+
+        let error = (error) => {
+          alert(JSON.stringify(error, null, 2));
+        }
+        
+        let makeRequest = (token) => {
+          window.Trello.setToken(token);
+          try {
+            window.Trello.members.get('me', success, error)
+          } catch (err) {
+            console.log(err)
+          } 
+        }
+        
+        t.getRestApi()
+        .getToken()
+        .then((token) => {
+          console.log('We\'ve received a token!')
+          if (!token) { 
+            console.log('But it doesn\'t exist');
+            document.querySelector('button').addEventListener('click', function() {
+              t.getRestApi()
+              .authorize({ scope: 'read', expiration: '1hour' })
+              .then(function() {
+                t.closePopup();
+                alert('Successfully authorized')
+              });
+            });
+          } else {
+            console.log('So we should make a request with it.');
+            $("button").hide();
+            makeRequest(token);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
