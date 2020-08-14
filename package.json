@@ -1,0 +1,26 @@
+{
+  "name": "power-up",
+  "version": "0.0.1",
+  "description": "A sample Trello Power-Up that can be used as a starting point for your own awesome Power-Up.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": "https://github.com/trello/glitch-trello-power-up",
+  "dependencies": {
+    "compression": "^1.7.1",
+    "cors": "^2.8.5",
+    "express": "^4.16.2",
+    "confetti-js": "^0.0.15"
+  },
+  "engines": {
+    "node": "12"
+  },
+  "keywords": [
+    "power-ups",
+    "trello",
+    "glitch"
+  ],
+  "license": "MIT"
+}
