@@ -1,6 +1,6 @@
 # Smart Deadlines
 
-The Trello Power-Up 'Smart Deadlines' can be used to distribute estimations on cards over appointments in your iCal-Calendar. The calculated dates are set as due date in the given cards of the list. 
+The Trello [Trello](https://trello.com/) Power-Up 'Smart Deadlines' can be used to distribute estimations on cards over appointments in your iCal-Calendar. The calculated dates are set as due date in the given cards of the list. 
 
 **Important: The origin iCal-Calendar is only imported and will never be changed.**
 
