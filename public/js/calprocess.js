@@ -166,7 +166,7 @@ var processDueDates = function(t) {
         }
 
         t.alert({
-          message: "All deadlines in list calculated!",
+          message: "All due dates in list calculated!",
           duration: 6,
           display: "success"
         });
