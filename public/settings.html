@@ -64,7 +64,9 @@
             }
           })
           .then(function() {
-            t.sizeTo("#content").done();
+            if (!isInstructions) {
+              t.sizeTo("#content").done();
+            }
           });
       });
 
