@@ -26,7 +26,6 @@
         document.getElementById('content').style.textAlign = 'center';
       }
 
-
       var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}%2Fsmart-deadlines%2Fpublic%2Fauth-success.html`;
 
       var tokenLooksValid = function(token) {
@@ -50,7 +49,19 @@
           })
           .then(function() {
             if (isModal) {
-              return t.closeModal();
+            
+              t.closeModal();
+              
+              return t.modal({
+                // the url to load for the iframe
+                url: "./settings.html",
+                args: { isInstructions: true },
+                accentColor: "#CDD3D8",
+                height: 140,
+                fullscreen: false,
+                title: "Setup - Step 2",
+                actions: []
+              });
             }
             return t.closePopup();
           });
