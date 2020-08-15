@@ -12,6 +12,8 @@ var extractDates = function(t) {
       return;
     }
     
+    pattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
     var patternToUse = RegExp(pattern ? ".*" + pattern + ".*" : ".*");
 
     $.get(
