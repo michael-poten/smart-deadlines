@@ -151,7 +151,7 @@ TrelloPowerUp.initialize(
     "show-settings": function(t, options) {
       return t.popup({
         title: "Settings",
-        url: "../settings.html",
+        url: "/smart-deadlines/public/settings.html",
         height: 184
       });
     },
@@ -172,7 +172,7 @@ TrelloPowerUp.initialize(
     "on-enable": function(t, options) {
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
       return t.modal({
-        url: "../authorize.html",
+        url: "/smart-deadlines/public/authorize.html",
         args: { apiKey: trelloAPIKey, isModal: true },
         accentColor: "#CDD3D8",
         height: 140,
@@ -194,7 +194,7 @@ TrelloPowerUp.initialize(
       return t.popup({
         title: "Authorization",
         args: { apiKey: trelloAPIKey },
-        url: "../authorize.html",
+        url: "/smart-deadlines/public/authorize.html",
         height: 110
       });
     }
