@@ -20,7 +20,7 @@ t.render(function() {
       if (savedIsContinuous) {
         isContinuousSelector.checked = true;
       }
-      if (savedPatternToUse) {
+      if (savedPatternToUse && savedPatternToUse !== '.*') {
         patternToUseSelector.value = savedPatternToUse;
       }
     })
@@ -40,7 +40,7 @@ document.getElementById("save").addEventListener("click", function() {
             "board",
             "private",
             "patternToUse",
-            patternToUseSelector.value ? patternToUseSelector.value : '*'
+            patternToUseSelector.value ? patternToUseSelector.value : '.*'
           );
         });
     })

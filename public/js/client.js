@@ -77,7 +77,7 @@ t.getAll();
 */
 
 var GRAY_ICON =
-  "https://cdn.hyperdev.com/us-east-1%3A3d31b21c-01a0-4da2-8827-4bc6e88b7618%2Ficon-gray.svg";
+  "https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/timelapse.svg";
 var WHITE_ICON =
   "https://cdn.hyperdev.com/us-east-1%3A3d31b21c-01a0-4da2-8827-4bc6e88b7618%2Ficon-white.svg";
 
@@ -90,7 +90,7 @@ var estimationSelectionString = function(estimation, value) {
   return estimation ? (estimation.estimation === value ? " ✓" : "") : "";
 };
 
-var getBadges = function(t) {
+var getBadges = function(t, hidePossible) {
   let globalContext = t;
 
   return t
@@ -98,6 +98,10 @@ var getBadges = function(t) {
     .get("id")
     .then(function(id) {
       return t.get(id, "shared", "estimation").then(function(estimation) {
+        if (hidePossible && (!estimation || estimation.estimation === 0)) {
+          return [];
+        }
+
         return [
           {
             title: "Estimation", // for detail badges only
@@ -219,7 +223,7 @@ var getBadges = function(t) {
 TrelloPowerUp.initialize(
   {
     "card-badges": function(t, options) {
-      return getBadges(t);
+      return getBadges(t, true);
     },
     "card-detail-badges": function(t, options) {
       return getBadges(t);
@@ -238,7 +242,7 @@ TrelloPowerUp.initialize(
       return t.list("name", "id").then(function(list) {
         return [
           {
-            text: "Calculate due date",
+            text: "Calculate due dates",
             callback: function(t1) {
               processDueDates(t);
               return t1.closePopup();
@@ -248,32 +252,40 @@ TrelloPowerUp.initialize(
       });
     },
 
+    "on-enable": function(t, options) {
+      // This code will get triggered when a user enables your Power-Up
+      let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
+      return t.modal({
+        // the url to load for the iframe
+        url: "./authorize.html",
+        args: { apiKey: trelloAPIKey, isModal: true },
+        accentColor: "#CDD3D8",
+        height: 140,
+        fullscreen: false,
+        title: "Authorization of Smart Deadlines",
+        actions: []
+      });
+    },
     "authorization-status": function(t, options) {
-      return (
-        t
-          .get("member", "private", "token")
-          .then(function(token) {
-            if (token) {
-              return { authorized: true };
-            }
-            return { authorized: false };
-          })
-      );
+      return t.get("member", "private", "token").then(function(token) {
+        if (token) {
+          return { authorized: true };
+        }
+        return { authorized: false };
+      });
     },
     "show-authorization": function(t, options) {
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
-        return t.popup({
-          title: "My Auth Popup",
-          args: { apiKey: trelloAPIKey }, // Pass in API key to the iframe
-          url: "./authorize.html", // Check out public/authorize.html to see how to ask a user to auth
-          height: 140
-        });
+      return t.popup({
+        title: "Authorization",
+        args: { apiKey: trelloAPIKey }, // Pass in API key to the iframe
+        url: "./authorize.html", // Check out public/authorize.html to see how to ask a user to auth
+        height: 110
+      });
     }
   },
   {
-    appKey: "your_key_here",
-    appName: "My Trello App"
+    appKey: "5db50da477d5b9033e479892f742bf8d",
+    appName: "Smart Deadlines"
   }
 );
-
-console.log("Loaded by: " + document.referrer);

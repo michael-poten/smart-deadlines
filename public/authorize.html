@@ -5,24 +5,29 @@
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
   </head>
   <body>
-    <h1>
-      Hey there! 😀
-    </h1>
-    <p>
-      To make full use of our Power-Up, we're going to need you to authorize us
+    <div id="content">
+      <p>
+      To set the due dates in your cards, Smart Deadlines going to need you to authorize it
       to access your Trello account!
     </p>
     <button id="auth-btn" type="submit" class="mod-primary">
-      Authorize Access To Trello
+      Authorize access to Trello
     </button>
-
+    </div>
+    
     <script>
       var Promise = TrelloPowerUp.Promise;
       var t = TrelloPowerUp.iframe();
 
       var apiKey = t.arg("apiKey");
+      var isModal = t.arg("isModal");
+      if (isModal) {
+        document.getElementById('content').style.margin = '20px';
+        document.getElementById('content').style.textAlign = 'center';
+      }
 
-      var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Example%20Trello%20Power-Up&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}%2Fauth-success.html`;
+
+      var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}%2Fauth-success.html`;
 
       var tokenLooksValid = function(token) {
         return /^[0-9a-f]{64}$/.test(token);
@@ -39,11 +44,14 @@
               return t
                 .set("board", "private", "isContinuous", true)
                 .then(function() {
-                  return t.set("board", "private", "patternToUse", "*");
+                  return t.set("board", "private", "patternToUse", ".*");
                 });
             });
           })
           .then(function() {
+            if (isModal) {
+              return t.closeModal();
+            }
             return t.closePopup();
           });
       });
