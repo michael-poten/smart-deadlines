@@ -40,7 +40,7 @@ document.getElementById("save").addEventListener("click", function() {
             "board",
             "private",
             "patternToUse",
-            patternToUseSelector.value ? patternToUseSelector.value : '*'
+            patternToUseSelector.value ? patternToUseSelector.value : ''
           );
         });
     })

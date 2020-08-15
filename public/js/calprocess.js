@@ -29,27 +29,21 @@ var setDueDate = async function(
   }
 };
 
-var removeDueDate = async function(
-  t,
-  isOngoingStarted,
-  card
-) {
-  if (!isOngoingStarted) {
-    var token = await t.get("member", "private", "token");
-    var key = "5db50da477d5b9033e479892f742bf8d";
-    $.ajax({
-      url:
-        "https://api.trello.com/1/cards/" +
-        card.id +
-        "?key=" +
-        key +
-        "&token=" +
-        token +
-        "&due=",
-      type: "PUT",
-      success: function(result) {}
-    });
-  }
+var removeDueDate = async function(t, card) {
+  var token = await t.get("member", "private", "token");
+  var key = "5db50da477d5b9033e479892f742bf8d";
+  $.ajax({
+    url:
+      "https://api.trello.com/1/cards/" +
+      card.id +
+      "?key=" +
+      key +
+      "&token=" +
+      token +
+      "&due=",
+    type: "PUT",
+    success: function(result) {}
+  });
 };
 
 var filterEvents = function(events) {
@@ -69,11 +63,21 @@ var filterEvents = function(events) {
 };
 
 var processDueDates = function(t) {
-  new Promise(function(resolve, reject) {
+  new Promise(async function(resolve, reject) {
+    var token = await t.get("member", "private", "token");
+    console.log('token', token);
+    if (!token) {
+      t.alert({
+        message: "Please authorize Smart Deadlines (to set due dates)!",
+        duration: 6,
+        display: "error"
+      });
+      
+      return;
+    }
+
     extractDates(t).then(function(events) {
-      console.log("events", events);
       events = filterEvents(events);
-      console.log("events2", events);
 
       if (events.length === 0) {
         return;
@@ -93,6 +97,14 @@ var processDueDates = function(t) {
           var isOngoingStarted = false;
 
           var estimation = await t.get(card.id, "shared", "estimation");
+          if (estimation.estimation === 0) {
+            removeDueDate(t, card);
+            continue;
+          }
+          
+          if (card.dueComplete) {
+            continue;
+          }
 
           var restDurationCard = estimation.estimation;
           while (
@@ -132,7 +144,7 @@ var processDueDates = function(t) {
                       isOngoingStarted,
                       card
                     );
-                                    isOngoingStarted = true;
+                    isOngoingStarted = true;
                   }
                 } else {
                   setDueDate(
@@ -142,20 +154,19 @@ var processDueDates = function(t) {
                     isOngoingStarted,
                     card
                   );
-                                  isOngoingStarted = true;
+                  isOngoingStarted = true;
                 }
               }
               restDurationEvent = 0;
             }
           }
           if (restDurationCard > 0) {
-            removeDueDate(t, isOngoingStarted, card);
-            
+            removeDueDate(t, card);
           }
         }
 
         t.alert({
-          message: "Ready! All deadlines in list calculated!",
+          message: "All deadlines in list calculated!",
           duration: 6,
           display: "success"
         });
