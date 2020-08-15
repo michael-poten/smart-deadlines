@@ -50,14 +50,13 @@
           .then(function() {
             if (isModal) {
             
-              t.closeModal();
+              // t.closeModal();
               
               return t.modal({
-                // the url to load for the iframe
                 url: "/smart-deadlines/public/settings.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
-                height: 400,
+                height: 280,
                 fullscreen: false,
                 title: "Setup - Step 2",
                 actions: []
