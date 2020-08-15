@@ -3,7 +3,8 @@
 The operation of the Trello Power-Up "Smart Deadlines" ("the service") is provided by Michael Roedel ("we").
 
 # Your personal data
-What data do we collect
+
+### What data do we collect
 
 At this time we do not collect any personally identifiable data. We temporarily load calendar appointments, but they are never stored.
 
