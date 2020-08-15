@@ -234,7 +234,7 @@ TrelloPowerUp.initialize(
       // it is the least disruptive, and fits in well with the rest of Trello's UX
       return t.popup({
         title: "Settings",
-        url: "./settings.html",
+        url: "/smart-deadlines/public/settings.html",
         height: 184 // we can always resize later, but if we know the size in advance, its good to tell Trello
       });
     },
@@ -257,7 +257,7 @@ TrelloPowerUp.initialize(
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
       return t.modal({
         // the url to load for the iframe
-        url: "./authorize.html",
+        url: "/smart-deadlines/public/authorize.html",
         args: { apiKey: trelloAPIKey, isModal: true },
         accentColor: "#CDD3D8",
         height: 140,
@@ -279,7 +279,7 @@ TrelloPowerUp.initialize(
       return t.popup({
         title: "Authorization",
         args: { apiKey: trelloAPIKey }, // Pass in API key to the iframe
-        url: "./authorize.html", // Check out public/authorize.html to see how to ask a user to auth
+        url: "/smart-deadlines/public/authorize.html", // Check out public/authorize.html to see how to ask a user to auth
         height: 110
       });
     }
