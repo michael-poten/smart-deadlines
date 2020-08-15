@@ -12,7 +12,7 @@ You want to contribute? That's great! Please write me your idea or create your v
 
 ### Used technologies and libraries
 
-- Node / npm (tested with Node v.10.15.2)
+- Node / npm
 - Express
 
 ### Start by using Glitch
