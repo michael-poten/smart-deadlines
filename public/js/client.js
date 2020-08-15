@@ -194,7 +194,7 @@ TrelloPowerUp.initialize(
       return t.popup({
         title: "Authorization",
         args: { apiKey: trelloAPIKey },
-        url: "..authorize.html",
+        url: "../authorize.html",
         height: 110
       });
     }
