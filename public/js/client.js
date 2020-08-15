@@ -175,7 +175,7 @@ TrelloPowerUp.initialize(
         url: "/smart-deadlines/public/authorize.html",
         args: { apiKey: trelloAPIKey, isModal: true },
         accentColor: "#CDD3D8",
-        height: 140,
+        height: 400,
         fullscreen: false,
         title: "Setup - Step 1",
         actions: []
