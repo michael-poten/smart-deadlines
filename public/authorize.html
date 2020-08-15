@@ -50,13 +50,13 @@
           .then(function() {
             if (isModal) {
             
-              // t.closeModal();
+              t.closeModal();
               
               return t.modal({
                 url: "/smart-deadlines/public/settings.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
-                height: 280,
+                height: 360,
                 fullscreen: false,
                 title: "Setup - Step 2",
                 actions: []
