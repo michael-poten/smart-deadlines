@@ -25,8 +25,9 @@
         document.getElementById('content').style.margin = '20px';
         document.getElementById('content').style.textAlign = 'center';
       }
+      var returnUrl = encodeURI(t.arg("pathUrlSmartDeadlines"));
 
-      var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}%2Fsmart-deadlines%2Fpublic%2Fauth-success.html`;
+      var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}${returnUrl}auth-success.html`;
 
       var tokenLooksValid = function(token) {
         return /^[0-9a-f]{64}$/.test(token);
@@ -53,11 +54,10 @@
               t.closeModal();
               
               return t.modal({
-                // the url to load for the iframe
-                url: "./settings.html",
+                url: t.arg("pathUrlSmartDeadlines") + "settings.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
-                height: 140,
+                height: 360,
                 fullscreen: false,
                 title: "Setup - Step 2",
                 actions: []

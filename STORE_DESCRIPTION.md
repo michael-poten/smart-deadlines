@@ -14,25 +14,25 @@ After entering the URL to your iCal calendar in the preferences and setting esti
 
 **User estimates**
 
-Card A: 1 Stunde
+Card A: 1 hour
 
-Card B: 1,5 Stunden
+Card B: 1,5 hours
 
-Card C: 1 Stunde
+Card C: 1 hour
 
 **Dates according to calendar**
 
-16.8.2020 / 10 - 12 Uhr
+16.8.2020 / 10 - 12 o'clock
 
-16.8.2020 / 15 - 17 Uhr
+16.8.2020 / 15 - 17 o'clock
 
 **Calculated due dates**
 
-Card A: 10:00 Uhr
+Card A: 10:00 o'clock
 
-Card B: 11:00 Uhr
+Card B: 11:00 o'clock
 
-Card C: 15:30 Uhr
+Card C: 15:30 o'clock
 
 ## Open Source
 
