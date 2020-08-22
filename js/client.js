@@ -1,27 +1,26 @@
 /* global TrelloPowerUp */
-var Promise = TrelloPowerUp.Promise;
 
-var GRAY_ICON =
+let GRAY_ICON =
   "https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/timelapse.svg";
-var COUNTER_GRAY_ICON =
+let COUNTER_GRAY_ICON =
   "https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/counter.svg";
 
-var setCardEstimation = function(t, value) {
+let setCardEstimation = function(t, value) {
   t.set("card", "shared", "estimation", value);
   return t.closePopup();
 };
 
-var estimationSelectionString = function(estimation, value) {
+let estimationSelectionString = function(estimation, value) {
   return estimation ? (estimation.estimation === value ? " ✓" : "") : "";
 };
 
-var settingsItems = function(t, list) {
+let settingsItems = function(t, list) {
   return [
     {
       text: "Advanced calculation...",
-      callback: function(t, opts) {
+      callback: function(t) {
         t.modal({
-          url: pathUrlSmartDeadlines + "calculation.html",
+          url: "/components/calculation.html",
           accentColor: "#CDD3D8",
           args: { listId: list.id, listName: list.name },
           height: 300,
@@ -33,10 +32,10 @@ var settingsItems = function(t, list) {
     },
     {
       text: "Set settings...",
-      callback: function(t2, opts) {
+      callback: function(t2) {
         return t2.popup({
           title: "Settings for list",
-          url: pathUrlSmartDeadlines + "settings-new.html",
+          url: "/components/settings-new.html",
           args: { listId: list.id, listName: list.name },
           height: 420
         });
@@ -44,7 +43,7 @@ var settingsItems = function(t, list) {
     },
     {
       text: "Deactivate for list",
-      callback: async function(t2, opts) {
+      callback: async function(t2) {
         await t2.remove("board", "private", list.id + "isActive");
         return t2.closePopup();
       }
@@ -52,7 +51,7 @@ var settingsItems = function(t, list) {
   ];
 };
 
-var getBadges = function(t, isEditMode) {
+let getBadges = function(t, isEditMode) {
   return t
     .card("id")
     .get("id")
@@ -60,10 +59,10 @@ var getBadges = function(t, isEditMode) {
       if (!id) {
         return [];
       }
-      var estimation = await t.get(id, "shared", "estimation");
-      var badges = [];
+      let estimation = await t.get(id, "shared", "estimation");
+      let badges = [];
       if (isEditMode || (estimation && estimation.estimation > 0)) {
-        var estimationBadge = {
+        let estimationBadge = {
           title: "Estimation",
           text: estimation ? estimation.text : "No estimation",
           icon: GRAY_ICON,
@@ -189,7 +188,7 @@ var getBadges = function(t, isEditMode) {
         badges.push(estimationBadge);
       }
 
-      var appointments = await t.get(id, "shared", "appointments");
+      let appointments = await t.get(id, "shared", "appointments");
       if (
         (isEditMode && estimation && estimation.estimation > 0 && appointments) ||
         (appointments &&
@@ -197,11 +196,11 @@ var getBadges = function(t, isEditMode) {
           estimation &&
           estimation.estimation > 0)
       ) {
-        var appointmentTexts = [];
-        for (var i = 0; i < appointments.length; i++) {
-          var appointment = appointments[i];
-          var startDateTmp = moment(appointment.startDate);
-          var endDateTmp = moment(appointment.endDate);
+        let appointmentTexts = [];
+        for (let i = 0; i < appointments.length; i++) {
+          let appointment = appointments[i];
+          let startDateTmp = moment(appointment.startDate);
+          let endDateTmp = moment(appointment.endDate);
           appointmentTexts.push({
             text:
               startDateTmp.format("D[.] MMMM") +
@@ -211,7 +210,7 @@ var getBadges = function(t, isEditMode) {
               endDateTmp.format("H:mm")
           });
         }
-        var appointmentsBadge = {
+        let appointmentsBadge = {
           title: "Appointments",
           text: appointments.length + " Appointments",
           icon: COUNTER_GRAY_ICON,
@@ -231,15 +230,15 @@ var getBadges = function(t, isEditMode) {
 
 TrelloPowerUp.initialize(
   {
-    "card-badges": function(t, options) {
+    "card-badges": function(t) {
       return getBadges(t);
     },
-    "card-detail-badges": function(t, options) {
+    "card-detail-badges": function(t) {
       return getBadges(t, true);
     },
     "list-actions": function(t) {
       return t.list("name", "id").then(async function(list) {
-        var isActive = await t.get("board", "private", list.id + "isActive");
+        let isActive = await t.get("board", "private", list.id + "isActive");
         console.log("isActive", isActive);
         if (isActive) {
           return [
@@ -274,14 +273,13 @@ TrelloPowerUp.initialize(
       });
     },
 
-    "on-enable": function(t, options) {
+    "on-enable": function(t) {
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
       return t.modal({
-        url: pathUrlSmartDeadlines + "authorize.html",
+        url: "/components/authorize.html",
         args: {
           apiKey: trelloAPIKey,
-          isModal: true,
-          pathUrlSmartDeadlines: pathUrlSmartDeadlines
+          isModal: true
         },
         accentColor: "#CDD3D8",
         height: 140,
@@ -290,15 +288,15 @@ TrelloPowerUp.initialize(
         actions: []
       });
     },
-    'show-settings': function(t, options){
+    'show-settings': function(t){
       return t.popup({
           title: "Global Settings",
-          url: pathUrlSmartDeadlines + "settings-new.html",
+          url: "/components/settings-new.html",
           args: { isGlobalSettings: true },
           height: 340
       });
     },
-    "authorization-status": function(t, options) {
+    "authorization-status": function(t) {
       return t.get("member", "private", "token").then(function(token) {
         if (token) {
           return { authorized: true };
@@ -306,15 +304,14 @@ TrelloPowerUp.initialize(
         return { authorized: false };
       });
     },
-    "show-authorization": function(t, options) {
+    "show-authorization": function(t) {
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
       return t.popup({
         title: "Authorization",
         args: {
-          apiKey: trelloAPIKey,
-          pathUrlSmartDeadlines: pathUrlSmartDeadlines
+          apiKey: trelloAPIKey
         },
-        url: "../authorize.html",
+        url: "/components/authorize.html",
         height: 110
       });
     }

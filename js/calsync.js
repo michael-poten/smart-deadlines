@@ -1,8 +1,8 @@
 var extractDates = function(t, listId, rangeStartInput) {
-  return new Promise(async function(resolve, reject) {
-    var listIsActive = await t.get("board", "private", listId + "listSettingsActive");
-    var linkToCal;
-    var pattern;
+  return new Promise(async function(resolve) {
+    let listIsActive = await t.get("board", "private", listId + "listSettingsActive");
+    let linkToCal;
+    let pattern;
     if (!listIsActive) {
       linkToCal = await t.get("board", "private", "linkToCal");
       pattern = await t.get("board", "private", "patternToUse");
@@ -24,32 +24,32 @@ var extractDates = function(t, listId, rangeStartInput) {
 
     pattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    var patternToUse = RegExp(pattern ? ".*" + pattern + ".*" : ".*");
+    let patternToUse = RegExp(pattern ? ".*" + pattern + ".*" : ".*");
 
     $.get("https://cors-anywhere.herokuapp.com/" + linkToCal, "text")
       .done(function(dataInput) {
         let data = ical.parseICS(dataInput);
 
-        var rangeStart = rangeStartInput;
-        var rangeEnd = rangeStartInput
-          .clone()
-          .startOf("day")
-          .add(3, "months");
+        const rangeStart = rangeStartInput;
+        let rangeEnd = rangeStartInput
+            .clone()
+            .startOf("day")
+            .add(3, "months");
 
-        var events = [];
+        let events = [];
 
-        for (var k in data) {
-          var event = data[k];
+        for (let k in data) {
+          let event = data[k];
           if (event.type === "VEVENT") {
             if (!patternToUse.test(event.summary)) {
               continue;
             }
 
-            var startDate = moment(event.start);
-            var endDate = moment(event.end);
+            let startDate = moment(event.start);
+            let endDate = moment(event.end);
 
-            var duration =
-              parseInt(endDate.format("x")) - parseInt(startDate.format("x"));
+            let duration =
+                parseInt(endDate.format("x")) - parseInt(startDate.format("x"));
 
             if (typeof event.rrule === "undefined") {
               if (
@@ -67,10 +67,10 @@ var extractDates = function(t, listId, rangeStartInput) {
                 duration: moment.duration(duration)
               });
             } else if (typeof event.rrule !== "undefined") {
-              var rule = event.rrule.replace("RRULE:", "");
+              let rule = event.rrule.replace("RRULE:", "");
               if (rule.indexOf("DTSTART") === -1) {
                 if (event.start.length === 8) {
-                  var comps = /^(\d{4})(\d{2})(\d{2})$/.exec(event.start);
+                  let comps = /^(\d{4})(\d{2})(\d{2})$/.exec(event.start);
                   if (comps) {
                     event.start = new Date(comps[1], comps[2] - 1, comps[3]);
                   }
@@ -97,37 +97,35 @@ var extractDates = function(t, listId, rangeStartInput) {
               }
 
               event.rrule = rrule.RRule.fromString(rule);
-              var dates = event.rrule.between(
-                rangeStart.toDate(),
-                rangeEnd.toDate(),
-                true
+              let dates = event.rrule.between(
+                  rangeStart.toDate(),
+                  rangeEnd.toDate(),
+                  true
               );
 
-              if (event.recurrences != undefined) {
-                for (var r in event.recurrences) {
+              if (event.recurrences !== undefined) {
+                for (let r in event.recurrences) {
                   if (
-                    moment(new Date(r)).isBetween(rangeStart, rangeEnd) != true
+                    moment(new Date(r)).isBetween(rangeStart, rangeEnd) !== true
                   ) {
                     dates.push(new Date(r));
                   }
                 }
               }
 
-              for (var i in dates) {
-                var date = dates[i];
-                var curEvent = event;
-                var showRecurrence = true;
-                var curDuration = duration;
+              for (let i in dates) {
+                let date = dates[i];
+                let curEvent = event;
+                let showRecurrence = true;
+                let curDuration = duration;
 
                 startDate = moment(date);
 
-                var isInIfElse = true;
-
-                var dateLookupKey = date.toISOString().substring(0, 10);
+                let dateLookupKey = date.toISOString().substring(0, 10);
 
                 if (
-                  curEvent.recurrences != undefined &&
-                  curEvent.recurrences[dateLookupKey] != undefined
+                  curEvent.recurrences !== undefined &&
+                  curEvent.recurrences[dateLookupKey] !== undefined
                 ) {
                   curEvent = curEvent.recurrences[dateLookupKey];
                   startDate = moment(curEvent.start);
@@ -135,8 +133,8 @@ var extractDates = function(t, listId, rangeStartInput) {
                     parseInt(moment(curEvent.end).format("x")) -
                     parseInt(startDate.format("x"));
                 } else if (
-                  curEvent.exdate != undefined &&
-                  curEvent.exdate[dateLookupKey] != undefined
+                  curEvent.exdate !== undefined &&
+                  curEvent.exdate[dateLookupKey] !== undefined
                 ) {
                   showRecurrence = false;
                 }
@@ -184,7 +182,7 @@ var extractDates = function(t, listId, rangeStartInput) {
 
         resolve(events);
       })
-      .fail(function(dataInput) {
+      .fail(function() {
         t.alert({
           message: "Sorry, could net connect to iCal-Calendar! (URL correct?)",
           duration: 6,
