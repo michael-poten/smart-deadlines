@@ -20,7 +20,7 @@ let settingsItems = function(t, list) {
       text: "Advanced calculation...",
       callback: function(t) {
         t.modal({
-          url: "/components/calculation.html",
+          url: "../components/calculation.html",
           accentColor: "#CDD3D8",
           args: { listId: list.id, listName: list.name },
           height: 300,
@@ -35,7 +35,7 @@ let settingsItems = function(t, list) {
       callback: function(t2) {
         return t2.popup({
           title: "Settings for list",
-          url: "/components/settings-new.html",
+          url: "../components/settings-new.html",
           args: { listId: list.id, listName: list.name },
           height: 420
         });
@@ -276,7 +276,7 @@ TrelloPowerUp.initialize(
     "on-enable": function(t) {
       let trelloAPIKey = "5db50da477d5b9033e479892f742bf8d";
       return t.modal({
-        url: "/components/authorize.html",
+        url: "../components/authorize.html",
         args: {
           apiKey: trelloAPIKey,
           isModal: true
@@ -291,7 +291,7 @@ TrelloPowerUp.initialize(
     'show-settings': function(t){
       return t.popup({
           title: "Global Settings",
-          url: "/components/settings-new.html",
+          url: "../components/settings-new.html",
           args: { isGlobalSettings: true },
           height: 340
       });
@@ -311,7 +311,7 @@ TrelloPowerUp.initialize(
         args: {
           apiKey: trelloAPIKey
         },
-        url: "/components/authorize.html",
+        url: "../components/authorize.html",
         height: 110
       });
     }
