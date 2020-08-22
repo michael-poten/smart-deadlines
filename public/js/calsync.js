@@ -1,7 +1,17 @@
-var extractDates = function(t) {
+var extractDates = function(t, listId, rangeStartInput) {
   return new Promise(async function(resolve, reject) {
-    var linkToCal = await t.get("board", "private", "linkToCal");
-    var pattern = await t.get("board", "private", "patternToUse");
+    var listIsActive = await t.get("board", "private", listId + "listSettingsActive");
+    var linkToCal;
+    var pattern;
+    if (!listIsActive) {
+      linkToCal = await t.get("board", "private", "linkToCal");
+      pattern = await t.get("board", "private", "patternToUse");
+    } else {
+      linkToCal = await t.get("board", "private", listId + "linkToCal");
+      pattern = await t.get("board", "private", listId + "patternToUse");
+    }
+
+    if (!pattern) pattern = "";
 
     if (!linkToCal) {
       t.alert({
@@ -11,18 +21,18 @@ var extractDates = function(t) {
       });
       return;
     }
-    
-    pattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
+
+    pattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
     var patternToUse = RegExp(pattern ? ".*" + pattern + ".*" : ".*");
 
-    $.get(
-      "https://cors-anywhere.herokuapp.com/" + linkToCal,
-      function(dataInput) {
+    $.get("https://cors-anywhere.herokuapp.com/" + linkToCal, "text")
+      .done(function(dataInput) {
         let data = ical.parseICS(dataInput);
 
-        var rangeStart = moment().startOf("day");
-        var rangeEnd = moment()
+        var rangeStart = rangeStartInput;
+        var rangeEnd = rangeStartInput
+          .clone()
           .startOf("day")
           .add(3, "months");
 
@@ -31,7 +41,6 @@ var extractDates = function(t) {
         for (var k in data) {
           var event = data[k];
           if (event.type === "VEVENT") {
-            
             if (!patternToUse.test(event.summary)) {
               continue;
             }
@@ -87,7 +96,6 @@ var extractDates = function(t) {
                 }
               }
 
-              console.log("rangeStart.toDate()", rangeStart.toDate());
               event.rrule = rrule.RRule.fromString(rule);
               var dates = event.rrule.between(
                 rangeStart.toDate(),
@@ -175,8 +183,13 @@ var extractDates = function(t) {
         }
 
         resolve(events);
-      },
-      "text"
-    );
+      })
+      .fail(function(dataInput) {
+        t.alert({
+          message: "Sorry, could net connect to iCal-Calendar! (URL correct?)",
+          duration: 6,
+          display: "error"
+        });
+      });
   });
 };

@@ -1,38 +1,41 @@
 var setDueDate = async function(
   t,
-  event,
+  dateTime,
   restDurationEvent,
   isOngoingStarted,
   card
 ) {
-  if (!isOngoingStarted) {
-    var cardStartDate = moment(event.startDate)
-      .add(event.duration)
-      .subtract(moment.duration(restDurationEvent, "minutes"));
-    console.log("startDate of " + card.name, cardStartDate);
+  var token = await t.get("member", "private", "token");
+  var key = "5db50da477d5b9033e479892f742bf8d";
+  return axios.put(
+    "https://api.trello.com/1/cards/" +
+      card.id +
+      "?key=" +
+      key +
+      "&token=" +
+      token +
+      "&due=" +
+      dateTime.format()
+  );
+};
 
-    var token = await t.get("member", "private", "token");
-    var key = "5db50da477d5b9033e479892f742bf8d";
-    $.ajax({
-      url:
-        "https://api.trello.com/1/cards/" +
-        card.id +
-        "?key=" +
-        key +
-        "&token=" +
-        token +
-        "&due=" +
-        cardStartDate.format(),
-      type: "PUT",
-      success: function(result) {}
-    });
-  }
+var getListById = async function(t, listId) {
+  var token = await t.get("member", "private", "token");
+  var key = "5db50da477d5b9033e479892f742bf8d";
+  return await $.get(
+    "https://api.trello.com/1/lists/" +
+      listId +
+      "/cards?key=" +
+      key +
+      "&token=" +
+      token
+  );
 };
 
 var removeDueDate = async function(t, card) {
   var token = await t.get("member", "private", "token");
   var key = "5db50da477d5b9033e479892f742bf8d";
-  $.ajax({
+  return $.ajax({
     url:
       "https://api.trello.com/1/cards/" +
       card.id +
@@ -41,14 +44,22 @@ var removeDueDate = async function(t, card) {
       "&token=" +
       token +
       "&due=",
-    type: "PUT",
-    success: function(result) {}
+    type: "PUT"
   });
 };
 
-var filterEvents = function(events) {
+var createAppointment = function(startDate, endDate, subject, cardId) {
+  return {
+    startDate: startDate.format(),
+    endDate: endDate.format(),
+    subject: subject,
+    cardId: cardId
+  };
+};
+
+var filterEvents = function(events, startDate) {
   var newEvents = [];
-  var currentTime = moment();
+  var currentTime = startDate;
   for (var i = 0; i < events.length; i++) {
     var event = events[i];
     if (currentTime.isBetween(event.startDate, event.endDate)) {
@@ -62,117 +73,204 @@ var filterEvents = function(events) {
   return newEvents;
 };
 
-var processDueDates = function(t) {
-  new Promise(async function(resolve, reject) {
+var startDateCalculationWithDependencies = function(t, lists, startDate) {
+  return new Promise(async function(resolve, reject) {
+    var lastEndDate = startDate;
+    for (var i = lists.length - 1; i >= 0; i--) {
+      lastEndDate = await startDateCalculation(t, lists[i].id, lastEndDate);
+    }
+    resolve();
+  });
+};
+
+var startDateCalculation = async function(t, listId, startDate) {
+  return new Promise(async function(resolve, reject) {
     var token = await t.get("member", "private", "token");
-    console.log('token', token);
     if (!token) {
       t.alert({
         message: "Please authorize Smart Deadlines (to set due dates)!",
         duration: 6,
         display: "error"
       });
-      
+
       return;
     }
 
-    extractDates(t).then(function(events) {
-      events = filterEvents(events);
+    var startDateForExtract = startDate.clone();
+    startDateForExtract.startOf("day");
 
+    extractDates(t, listId, startDateForExtract).then(async function(events) {
+      events = filterEvents(events, startDate);
+
+      console.log("events1", events);
       if (events.length === 0) {
         return;
       }
 
-      t.list("cards").then(async function(cards) {
-        console.log("cards", cards);
+      var cards = await getListById(t, listId);
 
-        var currentEventIndex = 0;
-        var event = events[currentEventIndex];
-        var restDurationEvent = event.duration.asMinutes();
+      console.log("cards", cards);
 
-        var isOngoing = await t.get("board", "private", "isContinuous");
+      var currentEventIndex = 0;
+      var event = events[currentEventIndex];
+      var restDurationEvent = event.duration.asMinutes();
 
-        for (var i = 0; i < cards.cards.length; i++) {
-          var card = cards.cards[i];
-          var isOngoingStarted = false;
+      var listIsActive = await t.get("board", "private", listId + "listSettingsActive");
+      var isOngoing;
+      if (!listIsActive) {
+          isOngoing = await t.get("board", "private", "isContinuous");
+      } else {
+          isOngoing = await t.get("board", "private", listId + "isContinuous");
+      }
 
-          var estimation = await t.get(card.id, "shared", "estimation");
-          if (estimation.estimation === 0) {
-            removeDueDate(t, card);
-            continue;
+      var lastEndDate = null;
+
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var isOngoingStarted = false;
+
+        var estimation = await t.get(card.id, "shared", "estimation");
+        if (!estimation || estimation.estimation === 0) {
+          await removeDueDate(t, card);
+          continue;
+        }
+
+        if (card.dueComplete) {
+          continue;
+        }
+
+        var appointments = [];
+
+        var restDurationCard = estimation.estimation;
+        while (restDurationCard > 0 && currentEventIndex + 1 <= events.length) {
+          if (restDurationEvent === 0) {
+            currentEventIndex = currentEventIndex + 1;
+            if (currentEventIndex + 1 > events.length) {
+              break;
+            }
+            event = events[currentEventIndex];
+            restDurationEvent = event.duration.asMinutes();
           }
-          
-          if (card.dueComplete) {
-            continue;
-          }
 
-          var restDurationCard = estimation.estimation;
-          while (
-            restDurationCard > 0 &&
-            currentEventIndex + 1 <= events.length
-          ) {
-            if (restDurationEvent === 0) {
-              currentEventIndex = currentEventIndex + 1;
-              if (currentEventIndex + 1 > events.length) {
-                break;
-              }
-              event = events[currentEventIndex];
-              restDurationEvent = event.duration.asMinutes();
+          if (restDurationEvent === restDurationCard) {
+            var startDateTmp = event.endDate
+              .clone()
+              .subtract(moment.duration(restDurationEvent, "minutes"));
+
+            appointments.push(
+              createAppointment(
+                startDateTmp,
+                event.endDate,
+                event.title,
+                card.id
+              )
+            );
+
+            if (!isOngoingStarted) {
+              await setDueDate(
+                t,
+                startDateTmp,
+                restDurationEvent,
+                isOngoingStarted,
+                card
+              );
             }
 
-            if (restDurationEvent === restDurationCard) {
-              setDueDate(t, event, restDurationEvent, isOngoingStarted, card);
-              isOngoingStarted = true;
+            isOngoingStarted = true;
+            lastEndDate = event.endDate;
 
-              restDurationCard = 0;
-              restDurationEvent = 0;
-            } else if (restDurationEvent > restDurationCard) {
-              setDueDate(t, event, restDurationEvent, isOngoingStarted, card);
-              isOngoingStarted = true;
+            restDurationCard = 0;
+            restDurationEvent = 0;
+          } else if (restDurationEvent > restDurationCard) {
+            var startDateTmp = event.endDate
+              .clone()
+              .subtract(moment.duration(restDurationEvent, "minutes"));
+            var endDateTmp = event.endDate
+              .clone()
+              .subtract(
+                moment.duration(restDurationEvent - restDurationCard, "minutes")
+              );
+            appointments.push(
+              createAppointment(startDateTmp, endDateTmp, event.title, card.id)
+            );
 
-              restDurationEvent = restDurationEvent - restDurationCard;
-              restDurationCard = 0;
-            } else if (restDurationEvent < restDurationCard) {
-              if (isOngoing) {
-                restDurationCard = restDurationCard - restDurationEvent;
-                if (currentEventIndex + 1 === events.length) {
-                  if (restDurationCard === 0) {
-                    setDueDate(
+            if (!isOngoingStarted) {
+              await setDueDate(
+                t,
+                startDateTmp,
+                restDurationEvent,
+                isOngoingStarted,
+                card
+              );
+            }
+
+            isOngoingStarted = true;
+            lastEndDate = endDateTmp;
+
+            restDurationEvent = restDurationEvent - restDurationCard;
+            restDurationCard = 0;
+          } else if (restDurationEvent < restDurationCard) {
+            if (isOngoing) {
+              var startDateTmp = event.endDate
+                .clone()
+                .subtract(moment.duration(restDurationEvent, "minutes"));
+              var endDateTmp = event.endDate.clone();
+              appointments.push(
+                createAppointment(
+                  startDateTmp,
+                  endDateTmp,
+                  event.title,
+                  card.id
+                )
+              );
+
+              lastEndDate = endDateTmp;
+
+              restDurationCard = restDurationCard - restDurationEvent;
+              if (currentEventIndex + 1 === events.length) {
+                if (restDurationCard === 0) {
+                  if (!isOngoingStarted) {
+                    await setDueDate(
                       t,
-                      event,
+                      startDateTmp,
                       restDurationEvent,
                       isOngoingStarted,
                       card
                     );
-                    isOngoingStarted = true;
                   }
-                } else {
-                  setDueDate(
+                  isOngoingStarted = true;
+                }
+              } else {
+                if (!isOngoingStarted) {
+                  await setDueDate(
                     t,
-                    event,
+                    startDateTmp,
                     restDurationEvent,
                     isOngoingStarted,
                     card
                   );
-                  isOngoingStarted = true;
                 }
+                isOngoingStarted = true;
               }
-              restDurationEvent = 0;
             }
-          }
-          if (restDurationCard > 0) {
-            removeDueDate(t, card);
+            restDurationEvent = 0;
           }
         }
+        if (restDurationCard > 0) {
+          await removeDueDate(t, card);
+          await t.remove(card.id, "shared", "appointments", appointments);
+        } else {
+          await t.set(card.id, "shared", "appointments", appointments);
+        }
+      }
 
-        t.alert({
-          message: "All due dates in list calculated!",
-          duration: 6,
-          display: "success"
-        });
-
-        resolve();
+      t.alert({
+        message: "All due dates in list calculated!",
+        duration: 6,
+        display: "success"
       });
+
+      resolve(lastEndDate);
     });
   });
 };
