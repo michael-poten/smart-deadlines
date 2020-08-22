@@ -7,14 +7,14 @@
   <body>
     <div id="content">
       <p>
-      To set the due dates in your cards, Smart Deadlines going to need you to authorize it
-      to access your Trello account!
-    </p>
-    <button id="auth-btn" type="submit" class="mod-primary">
-      Authorize access to Trello
-    </button>
+        To set the due dates in your cards, Smart Deadlines going to need you to
+        authorize it to access your Trello account!
+      </p>
+      <button id="auth-btn" type="submit" class="mod-primary">
+        Authorize access to Trello
+      </button>
     </div>
-    
+
     <script>
       var Promise = TrelloPowerUp.Promise;
       var t = TrelloPowerUp.iframe();
@@ -22,8 +22,8 @@
       var apiKey = t.arg("apiKey");
       var isModal = t.arg("isModal");
       if (isModal) {
-        document.getElementById('content').style.margin = '20px';
-        document.getElementById('content').style.textAlign = 'center';
+        document.getElementById("content").style.margin = "20px";
+        document.getElementById("content").style.textAlign = "center";
       }
       var returnUrl = encodeURI(t.arg("pathUrlSmartDeadlines"));
 
@@ -40,21 +40,14 @@
           validToken: tokenLooksValid
         })
           .then(function(token) {
-            return t.set("member", "private", "token", token).then(function() {
-              return t
-                .set("board", "private", "isContinuous", true)
-                .then(function() {
-                  return t.set("board", "private", "patternToUse", "");
-                });
-            });
+            return t.set("member", "private", "token", token);
           })
           .then(function() {
             if (isModal) {
-            
               t.closeModal();
-              
+
               return t.modal({
-                url: t.arg("pathUrlSmartDeadlines") + "settings.html",
+                url: t.arg("pathUrlSmartDeadlines") + "setup-step2.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
                 height: 360,
