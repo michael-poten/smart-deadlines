@@ -314,7 +314,7 @@ TrelloPowerUp.initialize(
           apiKey: trelloAPIKey,
           pathUrlSmartDeadlines: pathUrlSmartDeadlines
         },
-        url: pathUrlSmartDeadlines + "authorize.html",
+        url: "../authorize.html",
         height: 110
       });
     }
