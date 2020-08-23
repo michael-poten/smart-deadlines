@@ -16,20 +16,20 @@
     </div>
 
     <script>
-      var Promise = TrelloPowerUp.Promise;
-      var t = TrelloPowerUp.iframe();
+      let t = TrelloPowerUp.iframe();
 
-      var apiKey = t.arg("apiKey");
-      var isModal = t.arg("isModal");
+      let apiKey = t.arg("apiKey");
+      let isModal = t.arg("isModal");
       if (isModal) {
         document.getElementById("content").style.margin = "20px";
         document.getElementById("content").style.textAlign = "center";
       }
-      var returnUrl = encodeURI(t.arg("pathUrlSmartDeadlines"));
+      let absoluteUrl = window.TrelloPowerUp.util.relativeUrl("./auth-success.html");
+      let returnUrl = encodeURI(absoluteUrl);
 
-      var trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${window.location.origin}${returnUrl}auth-success.html`;
+      let trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${returnUrl}`;
 
-      var tokenLooksValid = function(token) {
+      let tokenLooksValid = function(token) {
         return /^[0-9a-f]{64}$/.test(token);
       };
 
@@ -47,7 +47,7 @@
               t.closeModal();
 
               return t.modal({
-                url: t.arg("pathUrlSmartDeadlines") + "setup-step2.html",
+                url: "./setup-finish.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
                 height: 360,

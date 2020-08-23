@@ -14,7 +14,7 @@ app.use(compression());
 app.use(cors({ origin: 'trello.com' }));
 
 // http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'));
+app.use(express.static('./'));
 
 // listen for requests :)
 const listener = app.listen(process.env.PORT, function () {

@@ -50,7 +50,6 @@
                 </select>
               </div>
             </span>
-
             <button
               :disabled="calculationStatus >= 1"
               id="addList"
@@ -127,6 +126,16 @@
           <div style="display: inline-block; text-align:right; width: 100%">
             <span>
               <button
+                id="exportAsIcs"
+                @click="exportAsIcs()"
+                :disabled="calculationStatus !== 2"
+              >
+                Export as ics file
+              </button>
+            </span>
+
+            <span>
+              <button
                 id="execute"
                 class="mod-primary"
                 @click="execute"
@@ -140,14 +149,18 @@
       </div>
 
       <script src="https://p.trellocdn.com/power-up.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/vue@2.6.6/dist/vue.js"></script>
-      <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-      <script src="https://michael-roedel.github.io/smart-deadlines/public/js/jquery.min.js"></script>
-      <script src="./js/rrule.js"></script>
-      <script src="./js/moment.js"></script>
-      <script src="./js/ical.js"></script>
-      <script src="./js/calsync.js"></script>
-      <script src="./js/calprocess.js"></script>
+      <script src="../js/libs/vue.js"></script>
+      <script src="../js/libs/axios.min.js"></script>
+      <script src="../js/libs/jquery.min.js"></script>
+      <script src="../js/libs/rrule.js"></script>
+      <script src="../js/libs/moment.js"></script>
+      <script src="../js/libs/ical.js"></script>
+      <script src="../js/libs/ics.min.js"></script>
+      <script src="../js/libs/FileSaver.min.js"></script>
+      <script src="../js/libs/Blob.js"></script>
+      <script src="../js/calsync.js"></script>
+      <script src="../js/calprocess.js"></script>
+
 
       <script>
         var t = TrelloPowerUp.iframe();
@@ -162,7 +175,8 @@
             selectedList: null,
             dependencies: [],
             calculationStatus: 0,
-            currentRunningIndex: null
+            currentRunningIndex: null,
+            totalAppointments: []
           },
           mounted() {
             this.listId = t.arg("listId");
@@ -190,14 +204,14 @@
                 success: async function(result) {
                   that.boards = result;
                   console.log(that.boards);
-                  var boardsToDelete = [];
-                  for (i = 0; i < that.boards.length; i++) {
-                    var board = that.boards[i];
+                  let boardsToDelete = [];
+                  for (let i = 0; i < that.boards.length; i++) {
+                    let board = that.boards[i];
 
-                    var listsToDelete = [];
+                    let listsToDelete = [];
                     for (j = 0; j < board.lists.length; j++) {
-                      var listTmp = board.lists[j];
-                      var linkToCalTmp = await t.get(
+                      let listTmp = board.lists[j];
+                      let linkToCalTmp = await t.get(
                         "board",
                         "private",
                         listTmp.id + "isActive"
@@ -207,7 +221,7 @@
                       }
                     }
                     for (j = listsToDelete.length - 1; j >= 0; j--) {
-                      var listToDelete = listsToDelete[j];
+                      let listToDelete = listsToDelete[j];
                       board.lists.splice(listToDelete, 1);
                     }
                     if (board.lists.length === 0) {
@@ -215,7 +229,7 @@
                       continue;
                     }
 
-                    var list = board.lists.find(
+                    let list = board.lists.find(
                       element => element.id === that.listId
                     );
                     if (list) {
@@ -235,8 +249,8 @@
                       }
                     }
                   }
-                  for (i = boardsToDelete.length - 1; i >= 0; i--) {
-                    var boardToDelete = boardsToDelete[i];
+                  for (let i = boardsToDelete.length - 1; i >= 0; i--) {
+                    let boardToDelete = boardsToDelete[i];
                     that.boards.splice(boardToDelete, 1);
                   }
 
@@ -248,11 +262,24 @@
                 }
               });
             },
+            exportAsIcs: function() {
+              var cal = ics();
+              
+              for (let k = 0; k < this.totalAppointments.length; k++) {
+                var appointment = this.totalAppointments[k];
+                var subject = appointment.cardName;
+                var startDate = moment(appointment.startDate).toDate();
+                var endDate = moment(appointment.endDate).toDate();
+                cal.addEvent(subject, "", "", startDate, endDate);
+              }
+              
+              cal.download("smart-deadlines");
+            },
             findListById: function(idOfList) {
               for (i = 0; i < this.boards.length; i++) {
-                var board = this.boards[i];
+                let board = this.boards[i];
 
-                var list = board.lists.find(element => element.id === idOfList);
+                let list = board.lists.find(element => element.id === idOfList);
                 if (list) {
                   return {
                     id: list.id,
@@ -279,21 +306,24 @@
               }, 100);
             },
             execute: async function() {
-              
               if (this.calculationStatus > 0) {
                 t.closeModal();
                 return;
               }
 
               this.calculationStatus = 1;
-              var lastEndDate = moment();
-              for (var i = this.dependencies.length - 1; i >= 0; i--) {
+              let lastEndDate = moment();
+              for (let i = this.dependencies.length - 1; i >= 0; i--) {
                 this.currentRunningIndex = i;
-                lastEndDate = await startDateCalculation(
+                var calculationResult = await startDateCalculation(
                   t,
                   this.dependencies[i].id,
                   lastEndDate
                 );
+                lastEndDate = calculationResult.lastEndDate;
+                for (let k = 0; k < calculationResult.totalAppointments.length; k++) {
+                  this.totalAppointments.push(calculationResult.totalAppointments[k]);
+                }
                 this.dependencies[i].lastCalculatedDate = lastEndDate;
               }
 
@@ -301,12 +331,12 @@
               this.calculationStatus = 2;
             },
             higherDependency: function(index) {
-              var b = this.dependencies[index];
+              let b = this.dependencies[index];
               Vue.set(this.dependencies, index, this.dependencies[index - 1]);
               Vue.set(this.dependencies, index - 1, b);
             },
             lowerDependency: function(index) {
-              var b = this.dependencies[index];
+              let b = this.dependencies[index];
               Vue.set(this.dependencies, index, this.dependencies[index + 1]);
               Vue.set(this.dependencies, index + 1, b);
             },
@@ -320,20 +350,19 @@
               }
             },
             readAllDependencies: async function() {
-              var loop = true;
-              var dependencies = [];
-              var currentList = this.dependencies[0];
-              var counter = 0;
+              let loop = true;
+              let currentList = this.dependencies[0];
+              let counter = 0;
               while (loop) {
                 if (!currentList) {
                   break;
                 }
-                var dependencyListId = await t.get(
+                let dependencyListId = await t.get(
                   "board",
                   "private",
                   currentList.id + "dependencyListId"
                 );
-                var listIsActive = await t.get(
+                let listIsActive = await t.get(
                   "board",
                   "private",
                   currentList.id + "isActive"

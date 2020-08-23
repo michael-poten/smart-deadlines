@@ -9,16 +9,23 @@
         <div id="settings">
           <div v-if="!isGlobalSettings">
             <input
-            type="checkbox"
-            id="listSettingsActive"
-            name="isContinuous"
-            style="margin-left: 3px"
-            v-model="listSettingsActive"
-          />
-          <h4 for="listSettingsActive" style="display: inline">Overwrite global settings</h4>
+              type="checkbox"
+              id="listSettingsActive"
+              name="isContinuous"
+              style="margin-left: 3px"
+              v-model="listSettingsActive"
+            />
+            <h4 for="listSettingsActive" style="display: inline">
+              Overwrite global settings
+            </h4>
           </div>
           <p>Link to iCal-Calendar:</p>
-          <input type="text" id="linkToCal" v-model="linkToCal" :disabled="!listSettingsActive" />
+          <input
+            type="text"
+            id="linkToCal"
+            v-model="linkToCal"
+            :disabled="!listSettingsActive"
+          />
           <p>Distribute over several appointments:</p>
           <input
             type="checkbox"
@@ -29,7 +36,12 @@
             :disabled="!listSettingsActive"
           />
           <p>Only appointments containing this title:</p>
-          <input type="text" id="patternToUse" v-model="patternToUse" :disabled="!listSettingsActive" />
+          <input
+            type="text"
+            id="patternToUse"
+            v-model="patternToUse"
+            :disabled="!listSettingsActive"
+          />
           <small>Empty uses all events.</small>
           <div v-if="!isGlobalSettings">
             <hr />
@@ -91,14 +103,22 @@
               Save
             </button>
           </p>
+          <div style="text-align:center" v-if="!isGlobalSettings">
+            <a
+              href
+              @click="deactivateList"
+            >
+              Deactivate SD for list
+            </a>
+          </div>
         </div>
       </div>
     </div>
 
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.6/dist/vue.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://michael-roedel.github.io/smart-deadlines/public/js/jquery.min.js"></script>
+    <script src="../js/libs/vue.js"></script>
+    <script src="../js/libs/axios.min.js"></script>
+    <script src="../js/libs/jquery.min.js"></script>
     <script>
       var t = TrelloPowerUp.iframe();
 
@@ -163,14 +183,14 @@
               "private",
               this.listId + "patternToUse"
             );
-                        
+
             this.listSettingsActive = await t.get(
               "board",
               "private",
               this.listId + "listSettingsActive"
             );
 
-            var selectedListId = await t.get(
+            let selectedListId = await t.get(
               "board",
               "private",
               this.listId + "dependencyListId"
@@ -178,9 +198,9 @@
 
             let that = this;
 
-            var token = await t.get("member", "private", "token");
-            var member = await t.member("all");
-            var key = "5db50da477d5b9033e479892f742bf8d";
+            let token = await t.get("member", "private", "token");
+            let member = await t.member("all");
+            let key = "5db50da477d5b9033e479892f742bf8d";
             $.ajax({
               url:
                 "https://api.trello.com/1/members/" +
@@ -203,14 +223,14 @@
                 }
 
                 console.log(that.boards);
-                var boardsToDelete = [];
+                let boardsToDelete = [];
                 for (i = 0; i < that.boards.length; i++) {
-                  var board = that.boards[i];
+                  let board = that.boards[i];
 
-                  var listsToDelete = [];
+                  let listsToDelete = [];
                   for (j = 0; j < board.lists.length; j++) {
-                    var listTmp = board.lists[j];
-                    var isActiveTmp = await t.get(
+                    let listTmp = board.lists[j];
+                    let isActiveTmp = await t.get(
                       "board",
                       "private",
                       listTmp.id + "isActive"
@@ -228,13 +248,13 @@
                     continue;
                   }
 
-                  var list = board.lists.find(
+                  let list = board.lists.find(
                     element => element.id === that.listId
                   );
                   board.lists.splice(board.lists.indexOf(list), 1);
 
                   if (!that.selectedList) {
-                    var useDefault = true;
+                    let useDefault = true;
                     if (selectedListId) {
                       useDefault = false;
                       that.selectedList = board.lists.find(
@@ -255,7 +275,7 @@
                   }
                 }
                 for (i = boardsToDelete.length - 1; i >= 0; i--) {
-                  var boardToDelete = boardsToDelete[i];
+                  let boardToDelete = boardsToDelete[i];
                   if (i !== 0) {
                     that.boards.splice(boardToDelete, 1);
                   }
@@ -267,6 +287,10 @@
               }
             });
             t.sizeTo(420);
+          },
+          deactivateList: async function() {
+            await t.remove("board", "private", this.listId + "isActive");
+            return t.closePopup();
           },
           saveData: async function() {
             if (this.isGlobalSettings) {
@@ -306,7 +330,7 @@
                 "board",
                 "private",
                 this.listId + "listSettingsActive",
-                this.listSettingsActive 
+                this.listSettingsActive
               );
               await t.set(
                 "board",
