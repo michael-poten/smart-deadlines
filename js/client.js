@@ -201,7 +201,7 @@ TrelloPowerUp.initialize(
     },
     "list-actions": function(t) {
       return t.list("name", "id").then(async function(list) {
-        let isActive = await t.get("member", "private", list.id + "isActive");
+        let isActive = await t.get("board", "private", list.id + "isActive");
         console.log("isActive", isActive);
         if (isActive) {
           return [
@@ -227,7 +227,7 @@ TrelloPowerUp.initialize(
                   title: "Settings for list",
                   url: "../components/settings-new.html",
                   args: { listId: list.id, listName: list.name },
-                  height: 420
+                  height: 350
                 });
               }
             },
@@ -237,7 +237,7 @@ TrelloPowerUp.initialize(
             {
               text: "Activate for list",
               callback: async function(t1) {
-                await t1.set("member", "private", list.id + "isActive", true);
+                await t1.set("board", "private", list.id + "isActive", true);
                 return t1.closePopup();
               }
             }
@@ -270,7 +270,7 @@ TrelloPowerUp.initialize(
       });
     },
     "authorization-status": function(t) {
-      return t.get("member", "private", "token").then(function(token) {
+      return t.get("board", "private", "token").then(function(token) {
         if (token) {
           return { authorized: true };
         }
@@ -285,7 +285,7 @@ TrelloPowerUp.initialize(
           apiKey: trelloAPIKey
         },
         url: "../components/authorize.html",
-        height: 110
+        height: 130
       });
     }
   },

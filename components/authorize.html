@@ -40,7 +40,7 @@
           validToken: tokenLooksValid
         })
           .then(function(token) {
-            return t.set("member", "private", "token", token);
+            return t.set("board", "private", "token", token);
           })
           .then(function() {
             if (isModal) {
@@ -50,9 +50,9 @@
                 url: "./setup-finish.html",
                 args: { isInstructions: true },
                 accentColor: "#CDD3D8",
-                height: 360,
+                height: 180,
                 fullscreen: false,
-                title: "Setup - Step 2",
+                title: "Setup finished",
                 actions: []
               });
             }

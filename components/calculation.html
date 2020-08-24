@@ -8,30 +8,7 @@
       <div id="calculation-area">
         <div>
           <div>
-            <span style="display: inline-block">
-              <div>
-                Board
-              </div>
-              <div>
-                <select
-                  v-model="selectedBoard"
-                  :disabled="calculationStatus >= 1"
-                >
-                  <option
-                    v-for="board in boards"
-                    v-bind:value="board"
-                    :key="board.id"
-                  >
-                    {{ board.name }}
-                  </option>
-                </select>
-              </div>
-            </span>
-
-            <span
-              style="display: inline-block; margin-left: 10px"
-              v-if="selectedBoard"
-            >
+            <span style="display: inline-block; margin-left: 10px">
               <div>
                 List
               </div>
@@ -41,7 +18,7 @@
                   :disabled="calculationStatus >= 1"
                 >
                   <option
-                    v-for="list in selectedBoard.lists"
+                    v-for="list in lists"
                     v-bind:value="list"
                     :key="list.id"
                   >
@@ -62,6 +39,20 @@
           </div>
           <hr />
           <div style="text-align:center; font-size: 1.2em">
+            <div v-if="exportEnabled">
+              <span class="chip" style="background-color: #b4d1c0">
+                Upload to iCal-Server
+              </span>
+              <span
+                style="margin-left: 2px; width: 50px; display: inline-block;"
+                v-if="exportSuccess"
+              >
+                👌
+              </span>
+              <div>
+                ↑
+              </div>
+            </div>
             <div v-for="(dependency, index) in dependencies">
               <div v-if="index > 0">
                 ↑
@@ -94,7 +85,7 @@
                 @click="removeDependency(index)"
                 style="cursor: pointer"
               >
-                {{ dependency.boardName }} - {{ dependency.name }}
+                {{ dependency.name }}
               </div>
               <span
                 style="margin-left: 2px; width: 34px; display: inline-block;"
@@ -123,14 +114,46 @@
             </div>
           </div>
           <hr />
-          <div style="display: inline-block; text-align:right; width: 100%">
-            <span>
-              <button
-                id="exportAsIcs"
-                @click="exportAsIcs()"
-                :disabled="calculationStatus !== 2"
-              >
-                Export as ics file
+          <div v-if="exportServer">
+            <input
+              type="checkbox"
+              id="exportEnabled"
+              name="exportEnabled"
+              :disabled="calculationStatus === 2"
+              style="margin-left: 3px"
+              v-model="exportEnabled"
+            />
+            <div for="exportEnabled" style="display: inline">
+              Export to iCal-server after finish
+            </div>
+            <div v-if="exportEnabled">
+              <span for="exportServerKey">
+                Key:
+              </span>
+              <input
+                type="text"
+                id="exportServerName"
+                name="exportServerName"
+                :disabled="calculationStatus === 2"
+                style="margin-left: 3px; display:inline; width: 233px"
+                v-model="exportServerName"
+              />
+              <input
+                type="text"
+                id="exportCalUrl"
+                name="exportCalUrl"
+                placeholder="Generated iCal-URL"
+                style="margin-left: 3px; width: 430px; display: inline"
+                :readonly="true"
+                v-model="exportCalUrl"
+              />
+            </div>
+            <hr />
+          </div>
+          <div style="text-align:right; width: 100%">
+            <span v-if="calculationStatus === 2">
+              <button id="exportAsIcs" @click="exportAsIcs">
+                Export as .ics file
               </button>
             </span>
 
@@ -161,7 +184,6 @@
       <script src="../js/calsync.js"></script>
       <script src="../js/calprocess.js"></script>
 
-
       <script>
         var t = TrelloPowerUp.iframe();
 
@@ -169,14 +191,26 @@
           el: "#calculation-area",
           data: {
             listId: null,
+            lists: [],
             currentList: null,
-            boards: [],
-            selectedBoard: null,
             selectedList: null,
             dependencies: [],
             calculationStatus: 0,
             currentRunningIndex: null,
-            totalAppointments: []
+            totalAppointments: [],
+            exportEnabled: false,
+            exportServer: null,
+            exportServerKey: null,
+            exportServerName: "",
+            exportSuccess: false,
+            exportCalUrl: ""
+          },
+          watch: {
+            exportEnabled: function() {
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 400);
+            }
           },
           mounted() {
             this.listId = t.arg("listId");
@@ -187,118 +221,102 @@
             initData: async function() {
               let that = this;
 
-              var token = await t.get("member", "private", "token");
+              this.exportServer = await t.get(
+                "board",
+                "private",
+                "exportServer"
+              );
+
+              if (!this.exportServer) {
+                this.exportEnabled = false;
+              } else {
+                this.exportEnabled = await t.get(
+                  "board",
+                  "private",
+                  "exportEnabled"
+                );
+              }
+              this.exportServerKey = await t.get(
+                "board",
+                "private",
+                "exportServerKey"
+              );
+              this.exportServerName = await t.get(
+                "board",
+                "private",
+                "exportServerName"
+              );
+
+              var token = await t.get("board", "private", "token");
               var member = await t.member("all");
               var key = "5db50da477d5b9033e479892f742bf8d";
-              $.ajax({
-                url:
-                  "https://api.trello.com/1/members/" +
-                  member.id +
-                  "/boards?key=" +
-                  key +
-                  "&token=" +
-                  token +
-                  "&lists=open" +
-                  "&filter=open",
-                type: "GET",
-                success: async function(result) {
-                  that.boards = result;
-                  console.log(that.boards);
-                  let boardsToDelete = [];
-                  for (let i = 0; i < that.boards.length; i++) {
-                    let board = that.boards[i];
 
-                    let listsToDelete = [];
-                    for (j = 0; j < board.lists.length; j++) {
-                      let listTmp = board.lists[j];
-                      let linkToCalTmp = await t.get(
-                        "member",
-                        "private",
-                        listTmp.id + "isActive"
-                      );
-                      if (!linkToCalTmp) {
-                        listsToDelete.push(j);
-                      }
-                    }
-                    for (j = listsToDelete.length - 1; j >= 0; j--) {
-                      let listToDelete = listsToDelete[j];
-                      board.lists.splice(listToDelete, 1);
-                    }
-                    if (board.lists.length === 0) {
-                      boardsToDelete.push(i);
-                      continue;
-                    }
+              this.lists = await t.lists("all");
 
-                    let list = board.lists.find(
-                      element => element.id === that.listId
-                    );
-                    if (list) {
-                      that.dependencies.push({
-                        id: list.id,
-                        name: list.name,
-                        boardName: board.name,
-                        boardId: board.id,
-                        lastCalculatedDate: null
-                      });
-                      board.lists.splice(board.lists.indexOf(list), 1);
-                    }
-
-                    if (!that.selectedList) {
-                      if (list) {
-                        that.selectedBoard = board;
-                      }
-                    }
-                  }
-                  for (let i = boardsToDelete.length - 1; i >= 0; i--) {
-                    let boardToDelete = boardsToDelete[i];
-                    that.boards.splice(boardToDelete, 1);
-                  }
-
-                  that.readAllDependencies();
-
-                  setTimeout(function() {
-                    t.sizeTo("#content");
-                  }, 100);
+              let listsToDelete = [];
+              for (j = 0; j < this.lists.length; j++) {
+                let listTmp = this.lists[j];
+                let linkToCalTmp = await t.get(
+                  "board",
+                  "private",
+                  listTmp.id + "isActive"
+                );
+                if (!linkToCalTmp) {
+                  listsToDelete.push(j);
                 }
-              });
+              }
+              for (j = listsToDelete.length - 1; j >= 0; j--) {
+                let listToDelete = listsToDelete[j];
+                this.lists.splice(listToDelete, 1);
+              }
+
+              let list = this.lists.find(element => element.id === that.listId);
+              if (list) {
+                that.dependencies.push({
+                  id: list.id,
+                  name: list.name,
+                  lastCalculatedDate: null
+                });
+                this.lists.splice(this.lists.indexOf(list), 1);
+              }
+
+              that.readAllDependencies();
+
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 100);
             },
-            exportAsIcs: function() {
+            processExportAsIcs: function() {
               var cal = ics();
-              
+
               for (let k = 0; k < this.totalAppointments.length; k++) {
                 var appointment = this.totalAppointments[k];
                 var subject = appointment.cardName;
-                var startDate = moment(appointment.startDate).toDate();
-                var endDate = moment(appointment.endDate).toDate();
+                var startDate = moment(appointment.startDate).format();
+                var endDate = moment(appointment.endDate).format();
                 cal.addEvent(subject, "", "", startDate, endDate);
               }
-              
+
+              return cal;
+            },
+            exportAsIcs: function() {
+              var cal = this.processExportAsIcs();
               cal.download("smart-deadlines");
             },
             findListById: function(idOfList) {
-              for (i = 0; i < this.boards.length; i++) {
-                let board = this.boards[i];
-
-                let list = board.lists.find(element => element.id === idOfList);
-                if (list) {
-                  return {
-                    id: list.id,
-                    name: list.name,
-                    boardName: board.name,
-                    boardId: board.id,
-                    lastCalculatedDate: null
-                  };
-                }
+              let list = this.lists.find(element => element.id === idOfList);
+              if (list) {
+                return {
+                  id: list.id,
+                  name: list.name,
+                  lastCalculatedDate: null
+                };
               }
             },
             addList: function() {
-              this.selectedList.boardName = this.selectedBoard.name;
-              this.selectedList.boardId = this.selectedBoard.id;
               this.dependencies.push({
                 id: this.selectedList.id,
                 name: this.selectedList.name,
-                boardName: this.selectedBoard.name,
-                boardId: this.selectedBoard.id,
                 lastCalculatedDate: null
               });
               setTimeout(function() {
@@ -320,11 +338,70 @@
                   this.dependencies[i].id,
                   lastEndDate
                 );
+                if (!calculationResult.lastEndDate) {
+                  continue;
+                }
                 lastEndDate = calculationResult.lastEndDate;
                 for (let k = 0; k < calculationResult.totalAppointments.length; k++) {
-                  this.totalAppointments.push(calculationResult.totalAppointments[k]);
+                  this.totalAppointments.push(
+                    calculationResult.totalAppointments[k]
+                  );
                 }
                 this.dependencies[i].lastCalculatedDate = lastEndDate;
+              }
+
+              await t.set(
+                "board",
+                "private",
+                "exportServerName",
+                this.exportServerName
+              );
+              await t.set(
+                "board",
+                "private",
+                "exportEnabled",
+                this.exportEnabled
+              );
+
+              if (this.exportEnabled) {
+                let bodyFormData = new FormData();
+
+                let cal = this.processExportAsIcs();
+
+                var blob;
+                if (navigator.userAgent.indexOf("MSIE 10") === -1) {
+                  // chrome or firefox
+                  blob = new Blob([cal.calendar()], { type: "text/calendar" });
+                } else {
+                  // ie
+                  var bb = new BlobBuilder();
+                  bb.append(cal.calendar());
+                  blob = bb.getBlob(
+                    "text/x-vCalendar;charset=" + document.characterSet
+                  );
+                }
+
+                bodyFormData.append(
+                  "ics",
+                  blob,
+                  this.exportServerName + ".ics"
+                );
+
+                let that = this;
+                axios({
+                  method: "post",
+                  url: this.exportServer + "/ics-upload",
+                  data: bodyFormData,
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                    token: this.exportServerKey,
+                    filename: this.exportServerName + ".ics"
+                  }
+                }).then(function(response) {
+                  that.exportSuccess = true;
+                  that.exportCalUrl =
+                    window.location.origin + response.data.data.url;
+                });
               }
 
               this.currentRunningIndex = null;
@@ -341,7 +418,10 @@
               Vue.set(this.dependencies, index + 1, b);
             },
             removeDependency: function(index) {
-              if (this.calculationStatus === 0) {
+              if (
+                this.calculationStatus === 0 &&
+                this.dependencies.length > 1
+              ) {
                 this.dependencies.splice(index, 1);
 
                 setTimeout(function() {
@@ -358,12 +438,12 @@
                   break;
                 }
                 let dependencyListId = await t.get(
-                  "member",
+                  "board",
                   "private",
                   currentList.id + "dependencyListId"
                 );
                 let listIsActive = await t.get(
-                  "member",
+                  "board",
                   "private",
                   currentList.id + "isActive"
                 );

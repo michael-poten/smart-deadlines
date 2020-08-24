@@ -5,7 +5,7 @@ let setDueDate = async function (
     isOngoingStarted,
     card
 ) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return axios.put(
         "https://api.trello.com/1/cards/" +
@@ -20,7 +20,7 @@ let setDueDate = async function (
 };
 
 let getListById = async function (t, listId) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return await $.get(
         "https://api.trello.com/1/lists/" +
@@ -32,8 +32,21 @@ let getListById = async function (t, listId) {
     );
 };
 
+let getPluginDataForCard = async function (t, cardId) {
+    let token = await t.get("board", "private", "token");
+    let key = "5db50da477d5b9033e479892f742bf8d";
+    return await $.get(
+        "https://api.trello.com/1/cards/" +
+        cardId +
+        "/pluginData?key=" +
+        key +
+        "&token=" +
+        token
+    );
+};
+
 let removeDueDate = async function (t, card) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return $.ajax({
         url:
@@ -76,7 +89,7 @@ let filterEvents = function (events, startDate) {
 
 let startDateCalculation = async function (t, listId, startDate) {
     return new Promise(async function (resolve) {
-        let token = await t.get("member", "private", "token");
+        let token = await t.get("board", "private", "token");
         if (!token) {
             t.alert({
                 message: "Please authorize Smart Deadlines (to set due dates)!",
@@ -105,12 +118,12 @@ let startDateCalculation = async function (t, listId, startDate) {
             let event = events[currentEventIndex];
             let restDurationEvent = event.duration.asMinutes();
 
-            let listIsActive = await t.get("member", "private", listId + "listSettingsActive");
+            let listIsActive = await t.get("board", "private", listId + "listSettingsActive");
             let isOngoing;
             if (!listIsActive) {
-                isOngoing = await t.get("member", "private", "isContinuous");
+                isOngoing = await t.get("board", "private", "isContinuous");
             } else {
-                isOngoing = await t.get("member", "private", listId + "isContinuous");
+                isOngoing = await t.get("board", "private", listId + "isContinuous");
             }
 
             let lastEndDate = null;
@@ -121,7 +134,7 @@ let startDateCalculation = async function (t, listId, startDate) {
                 let card = cards[i];
                 let isOngoingStarted = false;
 
-                let estimation = await t.get(card.id, "shared", "estimation");
+                let estimation = await t.get(card.id, "shared", "estimation");              
                 if (!estimation || estimation.estimation === 0) {
                     await removeDueDate(t, card);
                     continue;
