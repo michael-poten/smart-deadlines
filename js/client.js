@@ -14,43 +14,6 @@ let estimationSelectionString = function(estimation, value) {
   return estimation ? (estimation.estimation === value ? " ✓" : "") : "";
 };
 
-let settingsItems = function(t, list) {
-  return [
-    {
-      text: "Advanced calculation...",
-      callback: function(t) {
-        t.modal({
-          url: "../components/calculation.html",
-          accentColor: "#CDD3D8",
-          args: { listId: list.id, listName: list.name },
-          height: 300,
-          fullscreen: false,
-          title: "Advanced calculation",
-          actions: []
-        });
-      }
-    },
-    {
-      text: "Set settings...",
-      callback: function(t2) {
-        return t2.popup({
-          title: "Settings for list",
-          url: "../components/settings-new.html",
-          args: { listId: list.id, listName: list.name },
-          height: 420
-        });
-      }
-    },
-    {
-      text: "Deactivate for list",
-      callback: async function(t2) {
-        await t2.remove("board", "private", list.id + "isActive");
-        return t2.closePopup();
-      }
-    }
-  ];
-};
-
 let getBadges = function(t, isEditMode) {
   return t
     .card("id")
@@ -238,33 +201,43 @@ TrelloPowerUp.initialize(
     },
     "list-actions": function(t) {
       return t.list("name", "id").then(async function(list) {
-        let isActive = await t.get("board", "private", list.id + "isActive");
+        let isActive = await t.get("member", "private", list.id + "isActive");
         console.log("isActive", isActive);
         if (isActive) {
           return [
             {
-              text: "Calculate smart deadlines",
+              text: "Calculate smart deadlines...",
               callback: function(t1) {
-                startDateCalculation(t, list.id, moment().startOf("day"));
+                t.modal({
+                  url: "../components/calculation.html",
+                  accentColor: "#CDD3D8",
+                  args: { listId: list.id, listName: list.name },
+                  height: 300,
+                  fullscreen: false,
+                  title: "Calculation of smart deadlines",
+                  actions: []
+                });
                 return t1.closePopup();
               }
             },
             {
-              text: "More options...",
-              callback: function(t1) {
-                return t1.popup({
-                  title: "Configuration for list",
-                  items: settingsItems(t, list)
+              text: "Settings for list...",
+              callback: function(t2) {
+                return t2.popup({
+                  title: "Settings for list",
+                  url: "../components/settings-new.html",
+                  args: { listId: list.id, listName: list.name },
+                  height: 420
                 });
               }
-            }
+            },
           ];
         } else {
           return [
             {
               text: "Activate for list",
               callback: async function(t1) {
-                await t1.set("board", "private", list.id + "isActive", true);
+                await t1.set("member", "private", list.id + "isActive", true);
                 return t1.closePopup();
               }
             }

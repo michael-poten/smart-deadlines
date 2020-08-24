@@ -48,12 +48,13 @@ let removeDueDate = async function (t, card) {
     });
 };
 
-let createAppointment = function (startDate, endDate, subject, cardId) {
+let createAppointment = function (startDate, endDate, subject, cardId, cardName) {
     return {
         startDate: startDate.format(),
         endDate: endDate.format(),
         subject: subject,
-        cardId: cardId
+        cardId: cardId,
+        cardName: cardName
     };
 };
 
@@ -104,15 +105,17 @@ let startDateCalculation = async function (t, listId, startDate) {
             let event = events[currentEventIndex];
             let restDurationEvent = event.duration.asMinutes();
 
-            let listIsActive = await t.get("board", "private", listId + "listSettingsActive");
+            let listIsActive = await t.get("member", "private", listId + "listSettingsActive");
             let isOngoing;
             if (!listIsActive) {
-                isOngoing = await t.get("board", "private", "isContinuous");
+                isOngoing = await t.get("member", "private", "isContinuous");
             } else {
-                isOngoing = await t.get("board", "private", listId + "isContinuous");
+                isOngoing = await t.get("member", "private", listId + "isContinuous");
             }
 
             let lastEndDate = null;
+          
+            let totalAppointments = [];
 
             for (let i = 0; i < cards.length; i++) {
                 let card = cards[i];
@@ -151,7 +154,8 @@ let startDateCalculation = async function (t, listId, startDate) {
                                 startDateTmp,
                                 event.endDate,
                                 event.title,
-                                card.id
+                                card.id,
+                                card.name
                             )
                         );
 
@@ -180,7 +184,7 @@ let startDateCalculation = async function (t, listId, startDate) {
                                 moment.duration(restDurationEvent - restDurationCard, "minutes")
                             );
                         appointments.push(
-                            createAppointment(startDateTmp, endDateTmp, event.title, card.id)
+                            createAppointment(startDateTmp, endDateTmp, event.title, card.id, card.name)
                         );
 
                         if (!isOngoingStarted) {
@@ -209,7 +213,8 @@ let startDateCalculation = async function (t, listId, startDate) {
                                     startDateTmp,
                                     endDateTmp,
                                     event.title,
-                                    card.id
+                                    card.id,
+                                    card.name
                                 )
                             );
 
@@ -250,6 +255,10 @@ let startDateCalculation = async function (t, listId, startDate) {
                     await t.remove(card.id, "shared", "appointments", appointments);
                 } else {
                     await t.set(card.id, "shared", "appointments", appointments);
+                    for (let k = 0; k < appointments.length; k++) {
+                      totalAppointments.push(appointments[k]);
+                    }
+                    
                 }
             }
 
@@ -259,7 +268,10 @@ let startDateCalculation = async function (t, listId, startDate) {
                 display: "success"
             });
 
-            resolve(lastEndDate);
+            resolve({
+              lastEndDate: lastEndDate,
+              totalAppointments: totalAppointments
+            });
         });
     });
 };

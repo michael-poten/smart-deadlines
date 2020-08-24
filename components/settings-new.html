@@ -1,332 +1,347 @@
 <html>
-<head>
-    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css"/>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-</head>
-<body>
-<div id="settings-area">
-    <div id="content">
+  </head>
+  <body>
+    <div id="settings-area">
+      <div id="content">
         <div id="settings">
-            <div v-if="!isGlobalSettings">
-                <input
-                        type="checkbox"
-                        id="listSettingsActive"
-                        name="isContinuous"
-                        style="margin-left: 3px"
-                        v-model="listSettingsActive"
-                />
-                <h4 for="listSettingsActive" style="display: inline">Overwrite global settings</h4>
-            </div>
-            <p>Link to iCal-Calendar:</p>
-            <input type="text" id="linkToCal" v-model="linkToCal" :disabled="!listSettingsActive"/>
-            <p>Distribute over several appointments:</p>
+          <div v-if="!isGlobalSettings">
             <input
-                    type="checkbox"
-                    id="isContinuous"
-                    name="isContinuous"
-                    style="margin-left: 3px"
-                    v-model="isContinuous"
-                    :disabled="!listSettingsActive"
+              type="checkbox"
+              id="listSettingsActive"
+              name="isContinuous"
+              style="margin-left: 3px"
+              v-model="listSettingsActive"
             />
-            <p>Only appointments containing this title:</p>
-            <input type="text" id="patternToUse" v-model="patternToUse" :disabled="!listSettingsActive"/>
-            <small>Empty uses all events.</small>
-            <div v-if="!isGlobalSettings">
-                <hr/>
-                <h4>
-                    Set dependency
-                </h4>
+            <h4 for="listSettingsActive" style="display: inline">
+              Overwrite global settings
+            </h4>
+          </div>
+          <div v-if="isGlobalSettings">
+            <p>Link to iCal-Calendar:</p>
+            <input
+              type="text"
+              id="linkToCal"
+              v-model="linkToCal"
+              :disabled="!listSettingsActive"
+            />
+          </div>
+          <p>Distribute over several appointments:</p>
+          <input
+            type="checkbox"
+            id="isContinuous"
+            name="isContinuous"
+            style="margin-left: 3px"
+            v-model="isContinuous"
+            :disabled="!listSettingsActive"
+          />
+          <p>Only appointments containing this title:</p>
+          <input
+            type="text"
+            id="patternToUse"
+            v-model="patternToUse"
+            :disabled="!listSettingsActive"
+          />
+          <small>Empty uses all events.</small>
+          <div v-if="!isGlobalSettings">
+            <hr />
+            <h4>
+              Set dependency
+            </h4>
+            <div>
+              <div>
                 <div>
-                    <div>
-                        <div>
-                            Board
-                        </div>
-                        <div>
-                            <select v-model="selectedBoard">
-                                <option
-                                        v-for="board in boards"
-                                        v-bind:value="board"
-                                        :key="board.id"
-                                >
-                                    {{ board.name }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div>
-                            List
-                        </div>
-                        <div>
-                            <div v-if="selectedBoard && selectedBoard.id">
-                                <select v-model="selectedList">
-                                    <option
-                                            v-for="list in selectedBoard.lists"
-                                            v-bind:value="list"
-                                            :key="list.id"
-                                    >
-                                        {{ list.name }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div
-                                    v-if="!selectedBoard || !selectedBoard.id"
-                                    style="height:30px;"
-                            >
-                                No Board selected
-                            </div>
-                        </div>
-                    </div>
+                  Board
                 </div>
+                <div>
+                  <select v-model="selectedBoard">
+                    <option
+                      v-for="board in boards"
+                      v-bind:value="board"
+                      :key="board.id"
+                    >
+                      {{ board.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div>
+                  List
+                </div>
+                <div>
+                  <div v-if="selectedBoard && selectedBoard.id">
+                    <select v-model="selectedList">
+                      <option
+                        v-for="list in selectedBoard.lists"
+                        v-bind:value="list"
+                        :key="list.id"
+                      >
+                        {{ list.name }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div
+                    v-if="!selectedBoard || !selectedBoard.id"
+                    style="height:30px;"
+                  >
+                    No Board selected
+                  </div>
+                </div>
+              </div>
             </div>
-            <p>
-                <button
-                        id="save"
-                        class="mod-primary"
-                        style="width:100%"
-                        @click="saveData"
-                >
-                    Save
-                </button>
-            </p>
+          </div>
+          <p>
+            <button
+              id="save"
+              class="mod-primary"
+              style="width:100%"
+              @click="saveData"
+            >
+              Save
+            </button>
+          </p>
+          <div style="text-align:center" v-if="!isGlobalSettings">
+            <a
+              href
+              @click="deactivateList"
+            >
+              Deactivate SD for list
+            </a>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<script src="https://p.trellocdn.com/power-up.min.js"></script>
-<script src="../js/libs/vue.js"></script>
-<script src="../js/libs/axios.min.js"></script>
-<script src="../js/libs/jquery.min.js"></script>
-<script>
-    var t = TrelloPowerUp.iframe();
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="../js/libs/vue.js"></script>
+    <script src="../js/libs/axios.min.js"></script>
+    <script src="../js/libs/jquery.min.js"></script>
+    <script>
+      var t = TrelloPowerUp.iframe();
 
-    new Vue({
+      new Vue({
         el: "#settings-area",
         data: {
-            boards: [],
-            selectedBoard: null,
-            selectedList: null,
-            listId: null,
-            linkToCal: null,
-            isContinuous: true,
-            patternToUse: "",
-            isGlobalSettings: false,
-            listSettingsActive: false
+          boards: [],
+          selectedBoard: null,
+          selectedList: null,
+          listId: null,
+          linkToCal: null,
+          isContinuous: true,
+          patternToUse: "",
+          isGlobalSettings: false,
+          listSettingsActive: false
         },
         mounted() {
-            this.isGlobalSettings = t.arg("isGlobalSettings");
+          this.isGlobalSettings = t.arg("isGlobalSettings");
 
-            if (this.isGlobalSettings) {
-                this.initGlobalData();
-                this.listSettingsActive = true;
-            } else {
-                this.listId = t.arg("listId");
-                this.listName = t.arg("listName");
-                this.initData();
-            }
+          if (this.isGlobalSettings) {
+            this.initGlobalData();
+            this.listSettingsActive = true;
+          } else {
+            this.listId = t.arg("listId");
+            this.listName = t.arg("listName");
+            this.initData();
+          }
         },
         methods: {
-            initGlobalData: async function () {
-                this.linkToCal = await t.get("board", "private", "linkToCal");
+          initGlobalData: async function() {
+            this.linkToCal = await t.get("member", "private", "linkToCal");
 
-                this.isContinuous = await t.get("board", "private", "isContinuous");
-                if (this.isContinuous === undefined) {
-                    this.isContinuous = true;
-                }
-
-                this.patternToUse = await t.get("board", "private", "patternToUse");
-
-                setTimeout(function () {
-                    t.sizeTo("#content").done();
-                }, 100);
-            },
-            initData: async function () {
-                this.linkToCal = await t.get(
-                    "board",
-                    "private",
-                    this.listId + "linkToCal"
-                );
-
-                this.isContinuous = await t.get(
-                    "board",
-                    "private",
-                    this.listId + "isContinuous"
-                );
-                if (this.isContinuous === undefined) {
-                    this.isContinuous = true;
-                }
-
-                this.patternToUse = await t.get(
-                    "board",
-                    "private",
-                    this.listId + "patternToUse"
-                );
-
-                this.listSettingsActive = await t.get(
-                    "board",
-                    "private",
-                    this.listId + "listSettingsActive"
-                );
-
-                let selectedListId = await t.get(
-                    "board",
-                    "private",
-                    this.listId + "dependencyListId"
-                );
-
-                let that = this;
-
-                let token = await t.get("member", "private", "token");
-                let member = await t.member("all");
-                let key = "5db50da477d5b9033e479892f742bf8d";
-                $.ajax({
-                    url:
-                        "https://api.trello.com/1/members/" +
-                        member.id +
-                        "/boards?key=" +
-                        key +
-                        "&token=" +
-                        token +
-                        "&lists=open" +
-                        "&filter=open",
-                    type: "GET",
-                    success: async function (result) {
-                        that.boards.push({
-                            id: null,
-                            name: "-",
-                            lists: []
-                        });
-                        for (i = 0; i < result.length; i++) {
-                            that.boards.push(result[i]);
-                        }
-
-                        console.log(that.boards);
-                        let boardsToDelete = [];
-                        for (i = 0; i < that.boards.length; i++) {
-                            let board = that.boards[i];
-
-                            let listsToDelete = [];
-                            for (j = 0; j < board.lists.length; j++) {
-                                let listTmp = board.lists[j];
-                                let isActiveTmp = await t.get(
-                                    "board",
-                                    "private",
-                                    listTmp.id + "isActive"
-                                );
-                                if (!isActiveTmp) {
-                                    listsToDelete.push(j);
-                                }
-                            }
-                            for (j = listsToDelete.length - 1; j >= 0; j--) {
-                                var listToDelete = boardsToDelete[j];
-                                board.lists.splice(listToDelete, 1);
-                            }
-                            if (board.lists.length === 0) {
-                                boardsToDelete.push(i);
-                                continue;
-                            }
-
-                            let list = board.lists.find(
-                                element => element.id === that.listId
-                            );
-                            board.lists.splice(board.lists.indexOf(list), 1);
-
-                            if (!that.selectedList) {
-                                let useDefault = true;
-                                if (selectedListId) {
-                                    useDefault = false;
-                                    that.selectedList = board.lists.find(
-                                        element => element.id === selectedListId
-                                    );
-                                    if (that.selectedList) {
-                                        that.selectedBoard = board;
-                                    } else {
-                                        useDefault = true;
-                                    }
-                                }
-
-                                if (useDefault) {
-                                    if (list) {
-                                        that.selectedBoard = that.boards[0];
-                                    }
-                                }
-                            }
-                        }
-                        for (i = boardsToDelete.length - 1; i >= 0; i--) {
-                            let boardToDelete = boardsToDelete[i];
-                            if (i !== 0) {
-                                that.boards.splice(boardToDelete, 1);
-                            }
-                        }
-
-                        setTimeout(function () {
-                            t.sizeTo("#content").done();
-                        }, 100);
-                    }
-                });
-                t.sizeTo(420);
-            },
-            saveData: async function () {
-                if (this.isGlobalSettings) {
-                    await t.set("board", "private", "linkToCal", this.linkToCal);
-                    await t.set(
-                        "board",
-                        "private",
-                        "isContinuous",
-                        this.isContinuous
-                    );
-                    await t.set(
-                        "board",
-                        "private",
-                        "patternToUse",
-                        this.patternToUse
-                    );
-                } else {
-                    await t.set(
-                        "board",
-                        "private",
-                        this.listId + "linkToCal",
-                        this.linkToCal
-                    );
-                    await t.set(
-                        "board",
-                        "private",
-                        this.listId + "isContinuous",
-                        this.isContinuous
-                    );
-                    await t.set(
-                        "board",
-                        "private",
-                        this.listId + "patternToUse",
-                        this.patternToUse
-                    );
-                    await t.set(
-                        "board",
-                        "private",
-                        this.listId + "listSettingsActive",
-                        this.listSettingsActive
-                    );
-                    await t.set(
-                        "board",
-                        "private",
-                        this.listId + "dependencyListId",
-                        this.selectedList && this.selectedBoard.id
-                            ? this.selectedList.id
-                            : null
-                    );
-                }
-
-                this.closePopup();
-            },
-            closePopup() {
-                t.closePopup();
+            this.isContinuous = await t.get("member", "private", "isContinuous");
+            if (this.isContinuous === undefined) {
+              this.isContinuous = true;
             }
-        }
-    });
-</script>
 
-<style></style>
-</body>
+            this.patternToUse = await t.get("member", "private", "patternToUse");
+
+            setTimeout(function() {
+              t.sizeTo("#content").done();
+            }, 100);
+          },
+          initData: async function() {
+
+            this.isContinuous = await t.get(
+              "member",
+              "private",
+              this.listId + "isContinuous"
+            );
+            if (this.isContinuous === undefined) {
+              this.isContinuous = true;
+            }
+
+            this.patternToUse = await t.get(
+              "member",
+              "private",
+              this.listId + "patternToUse"
+            );
+
+            this.listSettingsActive = await t.get(
+              "member",
+              "private",
+              this.listId + "listSettingsActive"
+            );
+
+            let selectedListId = await t.get(
+              "member",
+              "private",
+              this.listId + "dependencyListId"
+            );
+
+            let that = this;
+
+            let token = await t.get("member", "private", "token");
+            let member = await t.member("all");
+            let key = "5db50da477d5b9033e479892f742bf8d";
+            $.ajax({
+              url:
+                "https://api.trello.com/1/members/" +
+                member.id +
+                "/boards?key=" +
+                key +
+                "&token=" +
+                token +
+                "&lists=open" +
+                "&filter=open",
+              type: "GET",
+              success: async function(result) {
+                that.boards.push({
+                  id: null,
+                  name: "-",
+                  lists: []
+                });
+                for (i = 0; i < result.length; i++) {
+                  that.boards.push(result[i]);
+                }
+
+                console.log(that.boards);
+                let boardsToDelete = [];
+                for (i = 0; i < that.boards.length; i++) {
+                  let board = that.boards[i];
+
+                  let listsToDelete = [];
+                  for (j = 0; j < board.lists.length; j++) {
+                    let listTmp = board.lists[j];
+                    let isActiveTmp = await t.get(
+                      "member",
+                      "private",
+                      listTmp.id + "isActive"
+                    );
+                    if (!isActiveTmp) {
+                      listsToDelete.push(j);
+                    }
+                  }
+                  for (j = listsToDelete.length - 1; j >= 0; j--) {
+                    var listToDelete = boardsToDelete[j];
+                    board.lists.splice(listToDelete, 1);
+                  }
+                  if (board.lists.length === 0) {
+                    boardsToDelete.push(i);
+                    continue;
+                  }
+
+                  let list = board.lists.find(
+                    element => element.id === that.listId
+                  );
+                  board.lists.splice(board.lists.indexOf(list), 1);
+
+                  if (!that.selectedList) {
+                    let useDefault = true;
+                    if (selectedListId) {
+                      useDefault = false;
+                      that.selectedList = board.lists.find(
+                        element => element.id === selectedListId
+                      );
+                      if (that.selectedList) {
+                        that.selectedBoard = board;
+                      } else {
+                        useDefault = true;
+                      }
+                    }
+
+                    if (useDefault) {
+                      if (list) {
+                        that.selectedBoard = that.boards[0];
+                      }
+                    }
+                  }
+                }
+                for (i = boardsToDelete.length - 1; i >= 0; i--) {
+                  let boardToDelete = boardsToDelete[i];
+                  if (i !== 0) {
+                    that.boards.splice(boardToDelete, 1);
+                  }
+                }
+
+                setTimeout(function() {
+                  t.sizeTo("#content").done();
+                }, 100);
+              }
+            });
+            t.sizeTo(420);
+          },
+          deactivateList: async function() {
+            await t.remove("member", "private", this.listId + "isActive");
+            return t.closePopup();
+          },
+          saveData: async function() {
+            if (this.isGlobalSettings) {
+              await t.set("member", "private", "linkToCal", this.linkToCal);
+              await t.set(
+                "member",
+                "private",
+                "isContinuous",
+                this.isContinuous
+              );
+              await t.set(
+                "member",
+                "private",
+                "patternToUse",
+                this.patternToUse
+              );
+            } else {
+              await t.set(
+                "member",
+                "private",
+                this.listId + "isContinuous",
+                this.isContinuous
+              );
+              await t.set(
+                "member",
+                "private",
+                this.listId + "patternToUse",
+                this.patternToUse
+              );
+              await t.set(
+                "member",
+                "private",
+                this.listId + "listSettingsActive",
+                this.listSettingsActive
+              );
+              await t.set(
+                "member",
+                "private",
+                this.listId + "dependencyListId",
+                this.selectedList && this.selectedBoard.id
+                  ? this.selectedList.id
+                  : null
+              );
+            }
+
+            this.closePopup();
+          },
+          closePopup() {
+            t.closePopup();
+          }
+        }
+      });
+    </script>
+
+    <style></style>
+  </body>
 </html>
