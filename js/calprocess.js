@@ -105,12 +105,12 @@ let startDateCalculation = async function (t, listId, startDate) {
             let event = events[currentEventIndex];
             let restDurationEvent = event.duration.asMinutes();
 
-            let listIsActive = await t.get("board", "private", listId + "listSettingsActive");
+            let listIsActive = await t.get("member", "private", listId + "listSettingsActive");
             let isOngoing;
             if (!listIsActive) {
-                isOngoing = await t.get("board", "private", "isContinuous");
+                isOngoing = await t.get("member", "private", "isContinuous");
             } else {
-                isOngoing = await t.get("board", "private", listId + "isContinuous");
+                isOngoing = await t.get("member", "private", listId + "isContinuous");
             }
 
             let lastEndDate = null;

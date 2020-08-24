@@ -201,7 +201,7 @@ TrelloPowerUp.initialize(
     },
     "list-actions": function(t) {
       return t.list("name", "id").then(async function(list) {
-        let isActive = await t.get("board", "private", list.id + "isActive");
+        let isActive = await t.get("member", "private", list.id + "isActive");
         console.log("isActive", isActive);
         if (isActive) {
           return [
@@ -237,7 +237,7 @@ TrelloPowerUp.initialize(
             {
               text: "Activate for list",
               callback: async function(t1) {
-                await t1.set("board", "private", list.id + "isActive", true);
+                await t1.set("member", "private", list.id + "isActive", true);
                 return t1.closePopup();
               }
             }

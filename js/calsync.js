@@ -1,14 +1,12 @@
 var extractDates = function(t, listId, rangeStartInput) {
   return new Promise(async function(resolve) {
-    let listIsActive = await t.get("board", "private", listId + "listSettingsActive");
-    let linkToCal;
+    let listIsActive = await t.get("member", "private", listId + "listSettingsActive");
+    let linkToCal = await t.get("member", "private", "linkToCal");
     let pattern;
     if (!listIsActive) {
-      linkToCal = await t.get("board", "private", "linkToCal");
-      pattern = await t.get("board", "private", "patternToUse");
+      pattern = await t.get("member", "private", "patternToUse");
     } else {
-      linkToCal = await t.get("board", "private", listId + "linkToCal");
-      pattern = await t.get("board", "private", listId + "patternToUse");
+      pattern = await t.get("member", "private", listId + "patternToUse");
     }
 
     if (!pattern) pattern = "";

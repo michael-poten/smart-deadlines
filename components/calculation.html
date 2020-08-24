@@ -212,7 +212,7 @@
                     for (j = 0; j < board.lists.length; j++) {
                       let listTmp = board.lists[j];
                       let linkToCalTmp = await t.get(
-                        "board",
+                        "member",
                         "private",
                         listTmp.id + "isActive"
                       );
@@ -358,12 +358,12 @@
                   break;
                 }
                 let dependencyListId = await t.get(
-                  "board",
+                  "member",
                   "private",
                   currentList.id + "dependencyListId"
                 );
                 let listIsActive = await t.get(
-                  "board",
+                  "member",
                   "private",
                   currentList.id + "isActive"
                 );

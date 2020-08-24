@@ -19,13 +19,15 @@
               Overwrite global settings
             </h4>
           </div>
-          <p>Link to iCal-Calendar:</p>
-          <input
-            type="text"
-            id="linkToCal"
-            v-model="linkToCal"
-            :disabled="!listSettingsActive"
-          />
+          <div v-if="isGlobalSettings">
+            <p>Link to iCal-Calendar:</p>
+            <input
+              type="text"
+              id="linkToCal"
+              v-model="linkToCal"
+              :disabled="!listSettingsActive"
+            />
+          </div>
           <p>Distribute over several appointments:</p>
           <input
             type="checkbox"
@@ -149,28 +151,23 @@
         },
         methods: {
           initGlobalData: async function() {
-            this.linkToCal = await t.get("board", "private", "linkToCal");
+            this.linkToCal = await t.get("member", "private", "linkToCal");
 
-            this.isContinuous = await t.get("board", "private", "isContinuous");
+            this.isContinuous = await t.get("member", "private", "isContinuous");
             if (this.isContinuous === undefined) {
               this.isContinuous = true;
             }
 
-            this.patternToUse = await t.get("board", "private", "patternToUse");
+            this.patternToUse = await t.get("member", "private", "patternToUse");
 
             setTimeout(function() {
               t.sizeTo("#content").done();
             }, 100);
           },
           initData: async function() {
-            this.linkToCal = await t.get(
-              "board",
-              "private",
-              this.listId + "linkToCal"
-            );
 
             this.isContinuous = await t.get(
-              "board",
+              "member",
               "private",
               this.listId + "isContinuous"
             );
@@ -179,19 +176,19 @@
             }
 
             this.patternToUse = await t.get(
-              "board",
+              "member",
               "private",
               this.listId + "patternToUse"
             );
 
             this.listSettingsActive = await t.get(
-              "board",
+              "member",
               "private",
               this.listId + "listSettingsActive"
             );
 
             let selectedListId = await t.get(
-              "board",
+              "member",
               "private",
               this.listId + "dependencyListId"
             );
@@ -231,7 +228,7 @@
                   for (j = 0; j < board.lists.length; j++) {
                     let listTmp = board.lists[j];
                     let isActiveTmp = await t.get(
-                      "board",
+                      "member",
                       "private",
                       listTmp.id + "isActive"
                     );
@@ -289,51 +286,45 @@
             t.sizeTo(420);
           },
           deactivateList: async function() {
-            await t.remove("board", "private", this.listId + "isActive");
+            await t.remove("member", "private", this.listId + "isActive");
             return t.closePopup();
           },
           saveData: async function() {
             if (this.isGlobalSettings) {
-              await t.set("board", "private", "linkToCal", this.linkToCal);
+              await t.set("member", "private", "linkToCal", this.linkToCal);
               await t.set(
-                "board",
+                "member",
                 "private",
                 "isContinuous",
                 this.isContinuous
               );
               await t.set(
-                "board",
+                "member",
                 "private",
                 "patternToUse",
                 this.patternToUse
               );
             } else {
               await t.set(
-                "board",
-                "private",
-                this.listId + "linkToCal",
-                this.linkToCal
-              );
-              await t.set(
-                "board",
+                "member",
                 "private",
                 this.listId + "isContinuous",
                 this.isContinuous
               );
               await t.set(
-                "board",
+                "member",
                 "private",
                 this.listId + "patternToUse",
                 this.patternToUse
               );
               await t.set(
-                "board",
+                "member",
                 "private",
                 this.listId + "listSettingsActive",
                 this.listSettingsActive
               );
               await t.set(
-                "board",
+                "member",
                 "private",
                 this.listId + "dependencyListId",
                 this.selectedList && this.selectedBoard.id
