@@ -250,6 +250,13 @@
                 element => element.id === this.listId
         );
         this.lists.splice(this.lists.indexOf(list), 1);
+        
+        if (selectedListId) {
+          let listSelected = this.lists.find(
+             element => element.id === selectedListId
+          );
+          this.selectedList = listSelected;
+        }
 
         setTimeout(function() {
           t.sizeTo("#content").done();

@@ -44,12 +44,18 @@ var extractDates = function(t, listId, rangeStartInput) {
             }
 
             let startDate = moment(event.start);
-            let endDate = moment(event.end);
+            let endDate;
+            if (!event.end) {
+              endDate = startDate.clone().add(1, "hours");
+            }else{
+              endDate = moment(event.end);
+            }
 
             let duration =
                 parseInt(endDate.format("x")) - parseInt(startDate.format("x"));
 
             if (typeof event.rrule === "undefined") {
+              
               if (
                 !startDate.isBetween(rangeStart, rangeEnd) &&
                 !endDate.isBetween(rangeStart, rangeEnd)
