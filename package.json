@@ -14,7 +14,8 @@
     "express": "^4.16.2",
     "confetti-js": "^0.0.15",
     "express-fileupload": "^1.2.0",
-    "body-parser": "^1.19.0"
+    "body-parser": "^1.19.0",
+    "axios": "^0.19.0"
   },
   "engines": {
     "node": "12"

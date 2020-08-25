@@ -6,6 +6,7 @@ const cors = require('cors');
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
+const axios = require('axios/index')
 
 const app = express();
 
@@ -17,7 +18,8 @@ app.use(fileUpload({createParentPath: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-const listener = app.listen(process.env.PORT, function () {
+const listener = app.listen(49024, function () {
+  console.log('Env variable SECRET_URL_STRING is ' + process.env.UGLIFY_URL_STRING);
   console.log('Smart Deadlines Trello Power-Up listening on port ' + listener.address().port);
 });
 
@@ -55,4 +57,18 @@ app.post('/ics-upload', async (req, res) => {
     } catch (err) {
         res.status(500).send(err);
     }
+});
+
+app.get('/cors', async (req, res) => {
+
+    let url = req.query.url;
+
+    axios.get(url)
+        .then(function (response) {
+            res.send(response.data);
+        })
+        .catch(function (error) {
+            res.status(500).send(error);
+        })
+
 });
