@@ -11,7 +11,7 @@ const axios = require('axios/index')
 const app = express();
 
 app.use(compression());
-app.use(cors({ origin: 'trello.com' }));
+app.use(cors({ origin: '*' }));
 app.use(express.static('./'));
 app.use(express.static('./ics-files/' + process.env.UGLIFY_URL_STRING ));
 app.use(fileUpload({createParentPath: true}));
