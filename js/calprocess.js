@@ -136,12 +136,14 @@ let startDateCalculation = async function (t, listId, startDate) {
 
                 let estimation = await t.get(card.id, "shared", "estimation");              
                 if (!estimation || estimation.estimation === 0) {
+                    await t.remove(card.id, "shared", "appointments");
                     await removeDueDate(t, card);
                     continue;
                 }
 
                 if (card.dueComplete) {
-                    continue;
+                  await t.remove(card.id, "shared", "appointments");
+                  continue;
                 }
 
                 let appointments = [];
@@ -265,7 +267,7 @@ let startDateCalculation = async function (t, listId, startDate) {
                 }
                 if (restDurationCard > 0) {
                     await removeDueDate(t, card);
-                    await t.remove(card.id, "shared", "appointments", appointments);
+                    await t.remove(card.id, "shared", "appointments");
                 } else {
                     await t.set(card.id, "shared", "appointments", appointments);
                     for (let k = 0; k < appointments.length; k++) {
