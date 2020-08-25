@@ -1,330 +1,337 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
-  </head>
-  <body>
-    <div id="settings-area">
-      <div id="content">
-        <div id="settings">
-          <div v-if="!isGlobalSettings">
-            <input
+<head>
+  <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+<div id="settings-area">
+  <div id="content">
+    <div id="settings">
+      <div v-if="!isGlobalSettings">
+        <input
+                type="checkbox"
+                id="listSettingsActive"
+                name="isContinuous"
+                style="margin-left: 3px"
+                v-model="listSettingsActive"
+        />
+        <h4 for="listSettingsActive" style="display: inline">
+          Overwrite global settings
+        </h4>
+      </div>
+      <div v-if="isGlobalSettings">
+        <p>Link to iCal-Calendar:</p>
+        <input
+                type="text"
+                id="linkToCal"
+                v-model="linkToCal"
+                :disabled="!listSettingsActive"
+        />
+      </div>
+      <p>Distribute over several appointments:</p>
+      <input
               type="checkbox"
-              id="listSettingsActive"
+              id="isContinuous"
               name="isContinuous"
               style="margin-left: 3px"
-              v-model="listSettingsActive"
-            />
-            <h4 for="listSettingsActive" style="display: inline">
-              Overwrite global settings
-            </h4>
-          </div>
-          <div v-if="isGlobalSettings">
-            <p>Link to iCal-Calendar:</p>
-            <input
-              type="text"
-              id="linkToCal"
-              v-model="linkToCal"
+              v-model="isContinuous"
               :disabled="!listSettingsActive"
-            />
-          </div>
-          <p>Distribute over several appointments:</p>
-          <input
-            type="checkbox"
-            id="isContinuous"
-            name="isContinuous"
-            style="margin-left: 3px"
-            v-model="isContinuous"
-            :disabled="!listSettingsActive"
-          />
-          <p>Only appointments containing this title:</p>
-          <input
-            type="text"
-            id="patternToUse"
-            v-model="patternToUse"
-            :disabled="!listSettingsActive"
-          />
-          <small>Empty uses all events.</small>
-          <div v-if="isGlobalSettings">
-            <hr />
-            <h5>
-              Own iCal-Server
-            </h5>
-            <div>
+      />
+      <p>Only appointments containing this title:</p>
+      <input
+              type="text"
+              id="patternToUse"
+              v-model="patternToUse"
+              :disabled="!listSettingsActive"
+      />
+      <small>Empty uses all events.</small>
+      <div v-if="isGlobalSettings">
+        <hr />
+        <h5>
+          Own iCal-Server
+        </h5>
+        <div>
               <span>
                 Server:
               </span>
-              <input
-                type="text"
-                id="exportServer"
-                name="exportServer"
-                v-model="exportServer"
-              />
+          <input
+                  type="text"
+                  id="exportServer"
+                  name="exportServer"
+                  v-model="exportServer"
+          />
+        </div>
+        <div>
+          <div>
+            Password:
+          </div>
+          <input
+                  type="text"
+                  id="exportServerKey"
+                  name="exportServerKey"
+                  v-model="exportServerKey"
+          />
+        </div>
+      </div>
+      <div v-if="!isGlobalSettings">
+        <hr />
+        <h4>
+          Set dependency
+        </h4>
+        <div>
+          <div>
+            <div>
+              List
             </div>
             <div>
-              <div>
-                Password:
-              </div>
-              <input
-                type="text"
-                id="exportServerKey"
-                name="exportServerKey"
-                v-model="exportServerKey"
-              />
-            </div>
-          </div>
-          <div v-if="!isGlobalSettings">
-            <hr />
-            <h4>
-              Set dependency
-            </h4>
-            <div>
-              <div>
-                <div>
-                  List
-                </div>
-                <div>
-                  <div >
-                    <select v-model="selectedList">
-                      <option
-                        v-for="list in lists"
-                        v-bind:value="list"
-                        :key="list.id"
-                      >
-                        {{ list.name }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
+              <div >
+                <select v-model="selectedList">
+                  <option
+                          v-for="list in lists"
+                          v-bind:value="list"
+                          :key="list.id"
+                  >
+                    {{ list.name }}
+                  </option>
+                </select>
               </div>
             </div>
-          </div>
-          <p>
-            <button
-              id="save"
-              class="mod-primary"
-              style="width:100%"
-              @click="saveData"
-            >
-              Save
-            </button>
-          </p>
-          <div style="text-align:center" v-if="!isGlobalSettings">
-            <a href @click="deactivateList">
-              Deactivate SD for list
-            </a>
           </div>
         </div>
       </div>
+      <p>
+        <button
+                id="save"
+                class="mod-primary"
+                style="width:100%"
+                @click="saveData"
+        >
+          Save
+        </button>
+      </p>
+      <div style="text-align:center" v-if="!isGlobalSettings">
+        <a href @click="deactivateList">
+          Deactivate SD for list
+        </a>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="../js/libs/vue.js"></script>
-    <script src="../js/libs/axios.min.js"></script>
-    <script src="../js/libs/jquery.min.js"></script>
-    <script>
-      var t = TrelloPowerUp.iframe();
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+<script src="../js/libs/vue.js"></script>
+<script src="../js/libs/axios.min.js"></script>
+<script src="../js/libs/jquery.min.js"></script>
+<script>
+  var t = TrelloPowerUp.iframe();
 
-      new Vue({
-        el: "#settings-area",
-        data: {
-          lists: [],
-          selectedList: null,
-          listId: null,
-          linkToCal: null,
-          isContinuous: true,
-          patternToUse: "",
-          isGlobalSettings: false,
-          listSettingsActive: false,
-          exportServer: null,
-          exportServerKey: null
-        },
-        mounted() {
-          this.isGlobalSettings = t.arg("isGlobalSettings");
+  new Vue({
+    el: "#settings-area",
+    data: {
+      lists: [],
+      selectedList: null,
+      listId: null,
+      linkToCal: null,
+      isContinuous: true,
+      patternToUse: "",
+      isGlobalSettings: false,
+      listSettingsActive: false,
+      exportServer: null,
+      exportServerKey: null
+    },
+    mounted() {
+      this.isGlobalSettings = t.arg("isGlobalSettings");
 
-          if (this.isGlobalSettings) {
-            this.initGlobalData();
-            this.listSettingsActive = true;
-          } else {
-            this.listId = t.arg("listId");
-            this.listName = t.arg("listName");
-            this.initData();
-          }
-        },
-        methods: {
-          initGlobalData: async function() {
-            this.linkToCal = await t.get("board", "private", "linkToCal");
+      if (this.isGlobalSettings) {
+        this.initGlobalData();
+        this.listSettingsActive = true;
+      } else {
+        this.listId = t.arg("listId");
+        this.listName = t.arg("listName");
+        this.initData();
+      }
+    },
+    methods: {
+      initGlobalData: async function() {
+        this.linkToCal = await t.get("board", "private", "linkToCal");
 
-            this.isContinuous = await t.get(
-              "board",
-              "private",
-              "isContinuous"
-            );
-            if (this.isContinuous === undefined) {
-              this.isContinuous = true;
-            }
-
-            this.patternToUse = await t.get(
-              "board",
-              "private",
-              "patternToUse"
-            );
-            
-            this.exportServer = await t.get(
-              "board",
-              "private",
-              "exportServer"
-            );
-            
-            this.exportServerKey = await t.get(
-              "board",
-              "private",
-              "exportServerKey"
-            );
-
-            setTimeout(function() {
-              t.sizeTo("#content").done();
-            }, 100);
-          },
-          initData: async function() {
-            this.isContinuous = await t.get(
-              "board",
-              "private",
-              this.listId + "isContinuous"
-            );
-            if (this.isContinuous === undefined) {
-              this.isContinuous = true;
-            }
-
-            this.patternToUse = await t.get(
-              "board",
-              "private",
-              this.listId + "patternToUse"
-            );
-
-            this.listSettingsActive = await t.get(
-              "board",
-              "private",
-              this.listId + "listSettingsActive"
-            );
-
-            let selectedListId = await t.get(
-              "board",
-              "private",
-              this.listId + "dependencyListId"
-            );
-
-            let token = await t.get("member", "private", "token");
-            let member = await t.member("all");
-            let key = "5db50da477d5b9033e479892f742bf8d";
-
-            this.listsInternal = await t.lists('all');
-            
-            this.lists.push({
-              id: null,
-              name: "-"
-            });
-            
-            for (j = 0; j < this.listsInternal.length; j++) {
-              this.lists.push(this.listsInternal[j]);
-            }
-
-            let listsToDelete = [];
-            for (j = 1; j < this.lists.length; j++) {
-              let listTmp = this.lists[j];
-              let isActiveTmp = await t.get(
+        this.isContinuous = await t.get(
                 "board",
                 "private",
-                listTmp.id + "isActive"
-              );
-              if (!isActiveTmp) {
-                listsToDelete.push(j);
-              }
-            }
-            for (j = listsToDelete.length - 1; j >= 0; j--) {
-              var listToDelete = listsToDelete[j];
-              this.lists.splice(listToDelete, 1);
-            }
+                "isContinuous"
+        );
+        if (this.isContinuous === undefined) {
+          this.isContinuous = true;
+        }
 
-            let list = this.lists.find(
-              element => element.id === this.listId
-            );
-            this.lists.splice(this.lists.indexOf(list), 1);
+        this.patternToUse = await t.get(
+                "board",
+                "private",
+                "patternToUse"
+        );
 
-            setTimeout(function() {
-              t.sizeTo("#content").done();
-            }, 100);
-            t.sizeTo(420);
-          },
-          deactivateList: async function() {
-            await t.remove("board", "private", this.listId + "isActive");
-            return t.closePopup();
-          },
-          saveData: async function() {
-            if (this.isGlobalSettings) {
-              await t.set("board", "private", "linkToCal", this.linkToCal);
-              await t.set(
+        this.exportServer = await t.get(
                 "board",
                 "private",
-                "isContinuous",
-                this.isContinuous
-              );
-              await t.set(
-                "board",
-                "private",
-                "patternToUse",
-                this.patternToUse
-              );
-              await t.set(
-                "board",
-                "private",
-                "exportServer",
-                this.exportServer
-              );
-              await t.set(
-                "board",
-                "private",
-                "exportServerKey",
-                this.exportServerKey
-              );
-            } else {
-              await t.set(
-                "board",
-                "private",
-                this.listId + "isContinuous",
-                this.isContinuous
-              );
-              await t.set(
-                "board",
-                "private",
-                this.listId + "patternToUse",
-                this.patternToUse
-              );
-              await t.set(
-                "board",
-                "private",
-                this.listId + "listSettingsActive",
-                this.listSettingsActive
-              );
-              await t.set(
-                "board",
-                "private",
-                this.listId + "dependencyListId",
-                this.selectedList && this.selectedList.id
-                  ? this.selectedList.id
-                  : null
-              );
-            }
+                "exportServer"
+        );
 
-            this.closePopup();
-          },
-          closePopup() {
-            t.closePopup();
+        this.exportServerKey = await t.get(
+                "board",
+                "private",
+                "exportServerKey"
+        );
+
+        setTimeout(function() {
+          t.sizeTo("#content").done();
+        }, 100);
+      },
+      initData: async function() {
+        this.isContinuous = await t.get(
+                "board",
+                "private",
+                this.listId + "isContinuous"
+        );
+        if (this.isContinuous === undefined) {
+          this.isContinuous = true;
+        }
+
+        this.patternToUse = await t.get(
+                "board",
+                "private",
+                this.listId + "patternToUse"
+        );
+
+        this.listSettingsActive = await t.get(
+                "board",
+                "private",
+                this.listId + "listSettingsActive"
+        );
+
+        let selectedListId = await t.get(
+                "board",
+                "private",
+                this.listId + "dependencyListId"
+        );
+
+        let token = await t.get("member", "private", "token");
+        let member = await t.member("all");
+        let key = "5db50da477d5b9033e479892f742bf8d";
+
+        this.listsInternal = await t.lists('all');
+
+        this.lists.push({
+          id: null,
+          name: "-"
+        });
+
+        for (j = 0; j < this.listsInternal.length; j++) {
+          this.lists.push(this.listsInternal[j]);
+        }
+
+        let listsToDelete = [];
+        for (j = 1; j < this.lists.length; j++) {
+          let listTmp = this.lists[j];
+          let isActiveTmp = await t.get(
+                  "board",
+                  "private",
+                  listTmp.id + "isActive"
+          );
+          if (!isActiveTmp) {
+            listsToDelete.push(j);
           }
         }
-      });
-    </script>
+        for (j = listsToDelete.length - 1; j >= 0; j--) {
+          var listToDelete = listsToDelete[j];
+          this.lists.splice(listToDelete, 1);
+        }
 
-    <style></style>
-  </body>
+        let list = this.lists.find(
+                element => element.id === this.listId
+        );
+        this.lists.splice(this.lists.indexOf(list), 1);
+        
+        if (selectedListId) {
+          let listSelected = this.lists.find(
+             element => element.id === selectedListId
+          );
+          this.selectedList = listSelected;
+        }
+
+        setTimeout(function() {
+          t.sizeTo("#content").done();
+        }, 100);
+        t.sizeTo(420);
+      },
+      deactivateList: async function() {
+        await t.remove("board", "private", this.listId + "isActive");
+        return t.closePopup();
+      },
+      saveData: async function() {
+        if (this.isGlobalSettings) {
+          await t.set("board", "private", "linkToCal", this.linkToCal);
+          await t.set(
+                  "board",
+                  "private",
+                  "isContinuous",
+                  this.isContinuous
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  "patternToUse",
+                  this.patternToUse
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  "exportServer",
+                  this.exportServer
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  "exportServerKey",
+                  this.exportServerKey
+          );
+        } else {
+          await t.set(
+                  "board",
+                  "private",
+                  this.listId + "isContinuous",
+                  this.isContinuous
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  this.listId + "patternToUse",
+                  this.patternToUse
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  this.listId + "listSettingsActive",
+                  this.listSettingsActive
+          );
+          await t.set(
+                  "board",
+                  "private",
+                  this.listId + "dependencyListId",
+                  this.selectedList && this.selectedList.id
+                          ? this.selectedList.id
+                          : null
+          );
+        }
+
+        this.closePopup();
+      },
+      closePopup() {
+        t.closePopup();
+      }
+    }
+  });
+</script>
+
+<style></style>
+</body>
 </html>
