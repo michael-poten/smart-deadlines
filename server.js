@@ -13,12 +13,12 @@ const app = express();
 app.use(compression());
 app.use(cors({ origin: '*' }));
 app.use(express.static('./'));
-app.use(express.static('./ics-files/' + process.env.UGLIFY_URL_STRING ));
+app.use(express.static('./ics-files/' + process.env.SECRET_URL_STRING ));
 app.use(fileUpload({createParentPath: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-const listener = app.listen(49024, function () {
+const listener = app.listen(3000, function () {
   console.log('Env variable SECRET_URL_STRING is ' + process.env.UGLIFY_URL_STRING);
   console.log('Smart Deadlines Trello Power-Up listening on port ' + listener.address().port);
 });
@@ -40,7 +40,7 @@ app.post('/ics-upload', async (req, res) => {
             });
         } else {
             let icsFile = req.files.ics;
-            let icsPath = '/ics-files/' + process.env.UGLIFY_URL_STRING + '/' + icsFile.name;
+            let icsPath = '/ics-files/' + process.env.SECRET_URL_STRING + '/' + icsFile.name;
             icsFile.mv('.' + icsPath);
 
             res.send({
