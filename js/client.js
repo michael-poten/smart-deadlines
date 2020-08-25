@@ -14,43 +14,6 @@ let estimationSelectionString = function(estimation, value) {
   return estimation ? (estimation.estimation === value ? " ✓" : "") : "";
 };
 
-let settingsItems = function(t, list) {
-  return [
-    {
-      text: "Advanced calculation...",
-      callback: function(t) {
-        t.modal({
-          url: "../components/calculation.html",
-          accentColor: "#CDD3D8",
-          args: { listId: list.id, listName: list.name },
-          height: 300,
-          fullscreen: false,
-          title: "Advanced calculation",
-          actions: []
-        });
-      }
-    },
-    {
-      text: "Set settings...",
-      callback: function(t2) {
-        return t2.popup({
-          title: "Settings for list",
-          url: "../components/settings-new.html",
-          args: { listId: list.id, listName: list.name },
-          height: 420
-        });
-      }
-    },
-    {
-      text: "Deactivate for list",
-      callback: async function(t2) {
-        await t2.remove("board", "private", list.id + "isActive");
-        return t2.closePopup();
-      }
-    }
-  ];
-};
-
 let getBadges = function(t, isEditMode) {
   return t
     .card("id")
@@ -243,21 +206,31 @@ TrelloPowerUp.initialize(
         if (isActive) {
           return [
             {
-              text: "Calculate smart deadlines",
+              text: "Calculate smart deadlines...",
               callback: function(t1) {
-                startDateCalculation(t, list.id, moment().startOf("day"));
+                t.modal({
+                  url: "../components/calculation.html",
+                  accentColor: "#CDD3D8",
+                  args: { listId: list.id, listName: list.name },
+                  height: 300,
+                  fullscreen: false,
+                  title: "Calculation of smart deadlines",
+                  actions: []
+                });
                 return t1.closePopup();
               }
             },
             {
-              text: "More options...",
-              callback: function(t1) {
-                return t1.popup({
-                  title: "Configuration for list",
-                  items: settingsItems(t, list)
+              text: "Settings for list...",
+              callback: function(t2) {
+                return t2.popup({
+                  title: "Settings for list",
+                  url: "../components/settings-new.html",
+                  args: { listId: list.id, listName: list.name },
+                  height: 350
                 });
               }
-            }
+            },
           ];
         } else {
           return [
@@ -297,7 +270,7 @@ TrelloPowerUp.initialize(
       });
     },
     "authorization-status": function(t) {
-      return t.get("member", "private", "token").then(function(token) {
+      return t.get("board", "private", "token").then(function(token) {
         if (token) {
           return { authorized: true };
         }
@@ -312,7 +285,7 @@ TrelloPowerUp.initialize(
           apiKey: trelloAPIKey
         },
         url: "../components/authorize.html",
-        height: 110
+        height: 130
       });
     }
   },

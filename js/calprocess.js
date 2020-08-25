@@ -5,7 +5,7 @@ let setDueDate = async function (
     isOngoingStarted,
     card
 ) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return axios.put(
         "https://api.trello.com/1/cards/" +
@@ -20,7 +20,7 @@ let setDueDate = async function (
 };
 
 let getListById = async function (t, listId) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return await $.get(
         "https://api.trello.com/1/lists/" +
@@ -32,8 +32,21 @@ let getListById = async function (t, listId) {
     );
 };
 
+let getPluginDataForCard = async function (t, cardId) {
+    let token = await t.get("board", "private", "token");
+    let key = "5db50da477d5b9033e479892f742bf8d";
+    return await $.get(
+        "https://api.trello.com/1/cards/" +
+        cardId +
+        "/pluginData?key=" +
+        key +
+        "&token=" +
+        token
+    );
+};
+
 let removeDueDate = async function (t, card) {
-    let token = await t.get("member", "private", "token");
+    let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
     return $.ajax({
         url:
@@ -48,12 +61,13 @@ let removeDueDate = async function (t, card) {
     });
 };
 
-let createAppointment = function (startDate, endDate, subject, cardId) {
+let createAppointment = function (startDate, endDate, subject, cardId, cardName) {
     return {
         startDate: startDate.format(),
         endDate: endDate.format(),
         subject: subject,
-        cardId: cardId
+        cardId: cardId,
+        cardName: cardName
     };
 };
 
@@ -75,7 +89,7 @@ let filterEvents = function (events, startDate) {
 
 let startDateCalculation = async function (t, listId, startDate) {
     return new Promise(async function (resolve) {
-        let token = await t.get("member", "private", "token");
+        let token = await t.get("board", "private", "token");
         if (!token) {
             t.alert({
                 message: "Please authorize Smart Deadlines (to set due dates)!",
@@ -113,19 +127,23 @@ let startDateCalculation = async function (t, listId, startDate) {
             }
 
             let lastEndDate = null;
+          
+            let totalAppointments = [];
 
             for (let i = 0; i < cards.length; i++) {
                 let card = cards[i];
                 let isOngoingStarted = false;
 
-                let estimation = await t.get(card.id, "shared", "estimation");
+                let estimation = await t.get(card.id, "shared", "estimation");              
                 if (!estimation || estimation.estimation === 0) {
+                    await t.remove(card.id, "shared", "appointments");
                     await removeDueDate(t, card);
                     continue;
                 }
 
                 if (card.dueComplete) {
-                    continue;
+                  await t.remove(card.id, "shared", "appointments");
+                  continue;
                 }
 
                 let appointments = [];
@@ -151,7 +169,8 @@ let startDateCalculation = async function (t, listId, startDate) {
                                 startDateTmp,
                                 event.endDate,
                                 event.title,
-                                card.id
+                                card.id,
+                                card.name
                             )
                         );
 
@@ -180,7 +199,7 @@ let startDateCalculation = async function (t, listId, startDate) {
                                 moment.duration(restDurationEvent - restDurationCard, "minutes")
                             );
                         appointments.push(
-                            createAppointment(startDateTmp, endDateTmp, event.title, card.id)
+                            createAppointment(startDateTmp, endDateTmp, event.title, card.id, card.name)
                         );
 
                         if (!isOngoingStarted) {
@@ -209,7 +228,8 @@ let startDateCalculation = async function (t, listId, startDate) {
                                     startDateTmp,
                                     endDateTmp,
                                     event.title,
-                                    card.id
+                                    card.id,
+                                    card.name
                                 )
                             );
 
@@ -247,9 +267,13 @@ let startDateCalculation = async function (t, listId, startDate) {
                 }
                 if (restDurationCard > 0) {
                     await removeDueDate(t, card);
-                    await t.remove(card.id, "shared", "appointments", appointments);
+                    await t.remove(card.id, "shared", "appointments");
                 } else {
                     await t.set(card.id, "shared", "appointments", appointments);
+                    for (let k = 0; k < appointments.length; k++) {
+                      totalAppointments.push(appointments[k]);
+                    }
+                    
                 }
             }
 
@@ -259,7 +283,10 @@ let startDateCalculation = async function (t, listId, startDate) {
                 display: "success"
             });
 
-            resolve(lastEndDate);
+            resolve({
+              lastEndDate: lastEndDate,
+              totalAppointments: totalAppointments
+            });
         });
     });
 };
