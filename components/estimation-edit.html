@@ -1,0 +1,202 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <div id="content">
+      <div id="estimation-area">
+        <div>
+          <span>
+            <span
+              v-if="estimation > 0"
+              id="estimation"
+              name="estimation"
+              style="margin-left: 3px; width: 80px; display: inline"
+                  >
+            {{ estimation | formatDuration }} hours</span>
+            <span
+              v-if="estimation === 0"
+              id="estimation"
+              name="estimation"
+              style="margin-left: 3px; width: 80px; display: inline"
+                  >
+            00:00 hours</span>
+            <button
+              id="addQuarterHour"
+              class="mod-primary"
+              @click="addQuarterHour"
+              style="margin-left: 12px; display: inline"
+            >
+              + 15 min
+            </button>
+            <button
+              id="addHour"
+              class="mod-primary"
+              @click="addHour"
+              style="margin-left: 3px; display: inline"
+            >
+              + 1 hour
+            </button>
+            <button
+              id="resetEstimation"
+              @click="resetEstimation"
+              style="margin-left: 3px; display: inline"
+            >
+              Reset
+            </button>
+          </span>
+          <h3 style="margin-top: 10px;" v-if="appointments && appointments.length > 0">
+            Appointments
+          </h3>
+          <div style="margin-top: 8px;">
+            <span v-for="appointment in appointments" style="margin-left: 5px;">
+              <div class="chip">
+                <div class="chip-content">{{ appointment.text }}</div>
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <script src="https://p.trellocdn.com/power-up.min.js"></script>
+      <script src="../js/libs/vue.js"></script>
+      <script src="../js/libs/axios.min.js"></script>
+      <script src="../js/libs/jquery.min.js"></script>
+      <script src="../js/libs/rrule.js"></script>
+      <script src="../js/libs/moment.js"></script>
+      <script src="../js/libs/ical.js"></script>
+      <script src="../js/libs/ics.min.js"></script>
+      <script src="../js/libs/FileSaver.min.js"></script>
+      <script src="../js/libs/Blob.js"></script>
+      <script src="../js/calsync.js"></script>
+      <script src="../js/calprocess.js"></script>
+
+      <script>
+        var t = window.TrelloPowerUp.iframe();
+
+        new Vue({
+          el: "#estimation-area",
+          data: {
+            estimation: 0,
+            appointments: [],
+            estimationData: null,
+            cardId: null
+          },
+          mounted() {
+            this.initAppointments();
+          },
+          filters: {
+            formatDuration: function (value) {
+              if (value) {
+                return moment.utc(moment.duration(value, "minutes").as('milliseconds')).format("HH:mm");
+              }
+            }
+          },
+          methods: {
+            formatOfDuration: function(value) {
+              return moment.utc(moment.duration(value, "minutes").as('milliseconds')).format("HH:mm");
+            },
+            addQuarterHour: function() {
+              this.estimation = this.estimation + 15;
+              if (!this.estimationData) {
+                this.estimationData = {};
+              }
+              this.estimationData.estimation = this.estimation;
+              this.estimationData.text = this.formatOfDuration(this.estimation);
+              t.set("card", "shared", "estimation", this.estimationData);
+            },
+            addHour: function() {
+              this.estimation = this.estimation + 60;
+              if (!this.estimationData) {
+                this.estimationData = {};
+              }
+              this.estimationData.estimation = this.estimation;
+              this.estimationData.text = this.formatOfDuration(this.estimation);
+              t.set("card", "shared", "estimation", this.estimationData);
+            },
+            resetEstimation: function() {
+              this.estimation = 0;
+              if (!this.estimationData) {
+                this.estimationData = {};
+              }
+              this.estimationData.estimation = this.estimation;
+              this.estimationData.text = this.formatOfDuration(this.estimation);
+              t.remove("card", "shared", "estimation");
+            },
+            initAppointments: async function() {
+              let card = await t.card("all");
+              this.cardId = card.id;
+              let appointmentsData = await t.get(
+                this.cardId,
+                "shared",
+                "appointments"
+              );
+              this.estimationData = await t.get(
+                this.cardId,
+                "shared",
+                "estimation"
+              );
+
+              if (!this.estimationData) {
+                this.estimation = 0;
+              } else {
+                this.estimation = this.estimationData.estimation;
+              }
+
+              if (appointmentsData) {
+                for (let i = 0; i < appointmentsData.length; i++) {
+                  let appointment = appointmentsData[i];
+                  let startDateTmp = moment(appointment.startDate);
+                  let endDateTmp = moment(appointment.endDate);
+                  this.appointments.push({
+                    text:
+                      startDateTmp.format("D[.] MMMM") +
+                      " " +
+                      startDateTmp.format("H:mm") +
+                      " - " +
+                      endDateTmp.format("H:mm")
+                  });
+                }
+              }
+              
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 400);
+            }
+          }
+        });
+      </script>
+    </div>
+    <style>
+      .chip {
+        display: inline-flex;
+        flex-direction: row;
+        background-color: #e5e5e5;
+        border: none;
+        cursor: default;
+        height: 36px;
+        outline: none;
+        padding: 0;
+        font-size: 14px;
+        font-color: #333333;
+        font-family: "Open Sans", sans-serif;
+        white-space: nowrap;
+        align-items: center;
+        border-radius: 16px;
+        vertical-align: middle;
+        text-decoration: none;
+        justify-content: center;
+      }
+      .chip-content {
+        cursor: inherit;
+        display: flex;
+        align-items: center;
+        user-select: none;
+        white-space: nowrap;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+    </style>
+  </body>
+</html>

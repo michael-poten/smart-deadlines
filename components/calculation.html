@@ -1,78 +1,78 @@
 <html>
-<head>
-  <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-</head>
-<body>
-<div id="content" style="padding:10px;">
-  <div id="calculation-area">
-    <div>
-      <div>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <div id="content" style="padding:10px;">
+      <div id="calculation-area">
+        <div>
+          <div>
             <span style="display: inline-block; margin-left: 10px">
               <div>
                 List
               </div>
               <div>
                 <select
-                        v-model="selectedList"
-                        :disabled="calculationStatus >= 1"
+                  v-model="selectedList"
+                  :disabled="calculationStatus >= 1"
                 >
                   <option
-                          v-for="list in lists"
-                          v-bind:value="list"
-                          :key="list.id"
+                    v-for="list in lists"
+                    v-bind:value="list"
+                    :key="list.id"
                   >
                     {{ list.name }}
                   </option>
                 </select>
               </div>
             </span>
-        <button
-                :disabled="calculationStatus >= 1"
-                id="addList"
-                class="mod-secondary"
-                @click="addList"
-                style="margin-left: 10px"
-        >
-          Add as dependency
-        </button>
-      </div>
-      <hr />
-      <div style="text-align:center; font-size: 1.2em">
-        <div v-if="exportEnabled">
+            <button
+              :disabled="calculationStatus >= 1"
+              id="addList"
+              class="mod-secondary"
+              @click="addList"
+              style="margin-left: 10px"
+            >
+              Add as dependency
+            </button>
+          </div>
+          <hr />
+          <div style="text-align:center; font-size: 1.2em">
+            <div v-if="exportEnabled">
               <span class="chip" style="background-color: #b4d1c0">
-                Upload to iCal-Server
+                Upload to server
               </span>
-          <span
-                  style="margin-left: 2px; width: 50px; display: inline-block;"
-                  v-if="exportSuccess"
-          >
+              <span
+                style="margin-left: 2px; width: 50px; display: inline-block;"
+                v-if="exportSuccess"
+              >
                 👌
               </span>
-          <div>
-            ↑
-          </div>
-        </div>
-        <div v-for="(dependency, index) in dependencies">
-          <div v-if="index > 0">
-            ↑
-          </div>
-          <span
-                  style="margin-right: 2px; width: 34px; display: inline-block;"
-                  v-if="calculationStatus === 0"
-          >
+              <div>
+                ↑
+              </div>
+            </div>
+            <div v-for="(dependency, index) in dependencies">
+              <div v-if="index > 0">
+                ↑
+              </div>
+              <span
+                style="margin-right: 2px; width: 34px; display: inline-block;"
+                v-if="calculationStatus === 0"
+              >
                 <button
-                        id="lowerDependency"
-                        @click="lowerDependency(index)"
-                        v-if="index !== dependencies.length - 1 && dependencies.length > 1"
+                  id="lowerDependency"
+                  @click="lowerDependency(index)"
+                  v-if="index !== dependencies.length - 1 && dependencies.length > 1"
                 >
                   ↓
                 </button>
               </span>
-          <span
-                  style="margin-left: 2px; width: 120px; display: inline-block; vertical-align: middle"
-                  v-if="dependency.lastCalculatedDate"
-          >
+              <span
+                style="margin-left: 2px; width: 120px; display: inline-block; vertical-align: middle"
+                v-if="dependency.lastCalculatedDate"
+              >
                 <div>
                   {{ dependency.lastCalculatedDate.format(("D[.] MMMM")) }}
                 </div>
@@ -80,425 +80,429 @@
                   {{ dependency.lastCalculatedDate.format(("H:mm")) }} o'clock
                 </div>
               </span>
-          <div
-                  class="chip"
-                  @click="removeDependency(index)"
-                  style="cursor: pointer"
-          >
-            {{ dependency.name }}
-          </div>
-          <span
-                  style="margin-left: 2px; width: 34px; display: inline-block;"
-                  v-if="calculationStatus === 0"
-          >
+              <div
+                class="chip"
+                @click="removeDependency(index)"
+                style="cursor: pointer"
+              >
+                {{ dependency.name }}
+              </div>
+              <span
+                style="margin-left: 2px; width: 34px; display: inline-block;"
+                v-if="calculationStatus === 0"
+              >
                 <button
-                        id="higherDependency"
-                        @click="higherDependency(index)"
-                        v-if="index !== 0 && dependencies.length > 1"
+                  id="higherDependency"
+                  @click="higherDependency(index)"
+                  v-if="index !== 0 && dependencies.length > 1"
                 >
                   ↑
                 </button>
               </span>
-          <span
-                  style="display: inline-block; vertical-align: middle"
-                  v-if="index === currentRunningIndex"
-          >
+              <span
+                style="display: inline-block; vertical-align: middle"
+                v-if="index === currentRunningIndex"
+              >
                 <div class="loader"></div>
               </span>
-          <span
-                  style="margin-left: 2px; width: 50px; display: inline-block;"
-                  v-if="dependency.lastCalculatedDate"
-          >
+              <span
+                style="margin-left: 2px; width: 50px; display: inline-block;"
+                v-if="dependency.lastCalculatedDate"
+              >
                 👌
               </span>
-        </div>
-      </div>
-      <hr />
-      <div v-if="exportServer">
-        <input
-                type="checkbox"
-                id="exportEnabled"
-                name="exportEnabled"
-                :disabled="calculationStatus === 2"
-                style="margin-left: 3px"
-                v-model="exportEnabled"
-        />
-        <div for="exportEnabled" style="display: inline">
-          Export to iCal-server after finish
-        </div>
-        <div v-if="exportEnabled">
+            </div>
+          </div>
+          <hr />
+          <div v-if="exportServer">
+            <input
+              type="checkbox"
+              id="exportEnabled"
+              name="exportEnabled"
+              :disabled="calculationStatus === 2"
+              style="margin-left: 3px"
+              v-model="exportEnabled"
+            />
+            <div for="exportEnabled" style="display: inline">
+              Export to server after finish
+            </div>
+            <div v-if="exportEnabled">
               <span for="exportServerKey">
                 Key:
               </span>
-          <input
-                  type="text"
-                  id="exportServerName"
-                  name="exportServerName"
-                  :disabled="calculationStatus === 2"
-                  style="margin-left: 3px; display:inline; width: 233px"
-                  v-model="exportServerName"
-          />
-          <input
-                  type="text"
-                  id="exportCalUrl"
-                  name="exportCalUrl"
-                  placeholder="Generated iCal-URL"
-                  style="margin-left: 3px; width: 430px; display: inline"
-                  :readonly="true"
-                  v-model="exportCalUrl"
-          />
-        </div>
-        <hr />
-      </div>
-      <div style="text-align:right; width: 100%">
+              <input
+                type="text"
+                id="exportServerName"
+                name="exportServerName"
+                :disabled="calculationStatus === 2"
+                style="margin-left: 3px; display:inline; width: 233px"
+                v-model="exportServerName"
+              />
+              <input
+                type="text"
+                id="exportCalUrl"
+                name="exportCalUrl"
+                placeholder="Generated iCal-URL"
+                style="margin-left: 3px; width: 430px; display: inline"
+                :readonly="true"
+                v-model="exportCalUrl"
+              />
+            </div>
+            <hr />
+          </div>
+          <div style="text-align:right; width: 100%">
             <span v-if="calculationStatus === 2">
               <button id="exportAsIcs" @click="exportAsIcs">
                 Export as .ics file
               </button>
             </span>
 
-        <span>
+            <span>
               <button
-                      id="execute"
-                      class="mod-primary"
-                      @click="execute"
-                      :disabled="calculationStatus === 1"
+                id="execute"
+                class="mod-primary"
+                @click="execute"
+                :disabled="calculationStatus === 1"
               >
                 {{ calculationStatus === 0 ? 'Execute' : 'Close'}}
               </button>
             </span>
+          </div>
+        </div>
       </div>
+
+      <script src="https://p.trellocdn.com/power-up.min.js"></script>
+      <script src="../js/libs/vue.js"></script>
+      <script src="../js/libs/axios.min.js"></script>
+      <script src="../js/libs/jquery.min.js"></script>
+      <script src="../js/libs/rrule.js"></script>
+      <script src="../js/libs/moment.js"></script>
+      <script src="../js/libs/ical.js"></script>
+      <script src="../js/libs/ics.min.js"></script>
+      <script src="../js/libs/FileSaver.min.js"></script>
+      <script src="../js/libs/Blob.js"></script>
+      <script src="../js/calsync.js"></script>
+      <script src="../js/calprocess.js"></script>
+
+      <script>
+        var t = TrelloPowerUp.iframe();
+
+        new Vue({
+          el: "#calculation-area",
+          data: {
+            listId: null,
+            lists: [],
+            currentList: null,
+            selectedList: null,
+            dependencies: [],
+            calculationStatus: 0,
+            currentRunningIndex: null,
+            totalAppointments: [],
+            exportEnabled: false,
+            exportServer: null,
+            exportServerKey: null,
+            exportServerName: "",
+            exportSuccess: false,
+            exportCalUrl: ""
+          },
+          watch: {
+            exportEnabled: function() {
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 400);
+            }
+          },
+          mounted() {
+            this.listId = t.arg("listId");
+            this.listName = t.arg("listName");
+            this.initData();
+          },
+          methods: {
+            initData: async function() {
+              let that = this;
+
+              this.exportServer = await t.get(
+                "board",
+                "private",
+                "exportServer"
+              );
+
+              if (!this.exportServer) {
+                this.exportEnabled = false;
+              } else {
+                this.exportEnabled = await t.get(
+                  "board",
+                  "private",
+                  "exportEnabled"
+                );
+              }
+              this.exportServerKey = await t.get(
+                "board",
+                "private",
+                "exportServerKey"
+              );
+              this.exportServerName = await t.get(
+                "board",
+                "private",
+                "exportServerName"
+              );
+
+              var token = await t.get("board", "private", "token");
+              var member = await t.member("all");
+              var key = "5db50da477d5b9033e479892f742bf8d";
+
+              this.lists = await t.lists("all");
+
+              let listsToDelete = [];
+              for (j = 0; j < this.lists.length; j++) {
+                let listTmp = this.lists[j];
+                let linkToCalTmp = await t.get(
+                  "board",
+                  "private",
+                  listTmp.id + "isActive"
+                );
+                if (!linkToCalTmp) {
+                  listsToDelete.push(j);
+                }
+              }
+              for (j = listsToDelete.length - 1; j >= 0; j--) {
+                let listToDelete = listsToDelete[j];
+                this.lists.splice(listToDelete, 1);
+              }
+
+              let list = this.lists.find(element => element.id === that.listId);
+              if (list) {
+                that.dependencies.push({
+                  id: list.id,
+                  name: list.name,
+                  lastCalculatedDate: null
+                });
+                this.lists.splice(this.lists.indexOf(list), 1);
+              }
+
+              that.readAllDependencies();
+
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 100);
+            },
+            processExportAsIcs: function() {
+              var cal = ics();
+
+              for (let k = 0; k < this.totalAppointments.length; k++) {
+                var appointment = this.totalAppointments[k];
+                var subject = appointment.cardName;
+                var startDate = moment(appointment.startDate).format();
+                var endDate = moment(appointment.endDate).format();
+                cal.addEvent(subject, "", "", startDate, endDate);
+              }
+
+              return cal;
+            },
+            exportAsIcs: function() {
+              var cal = this.processExportAsIcs();
+              cal.download("smart-deadlines");
+            },
+            findListById: function(idOfList) {
+              let list = this.lists.find(element => element.id === idOfList);
+              if (list) {
+                return {
+                  id: list.id,
+                  name: list.name,
+                  lastCalculatedDate: null
+                };
+              }
+            },
+            addList: function() {
+              this.dependencies.push({
+                id: this.selectedList.id,
+                name: this.selectedList.name,
+                lastCalculatedDate: null
+              });
+              setTimeout(function() {
+                t.sizeTo("#content");
+              }, 100);
+            },
+            execute: async function() {
+              if (this.calculationStatus > 0) {
+                t.closeModal();
+                return;
+              }
+
+              this.calculationStatus = 1;
+              let lastEndDate = moment();
+              for (let i = this.dependencies.length - 1; i >= 0; i--) {
+                this.currentRunningIndex = i;
+                var calculationResult = await startDateCalculation(
+                  t,
+                  this.dependencies[i].id,
+                  lastEndDate
+                );
+                if (!calculationResult.lastEndDate) {
+                  continue;
+                }
+                lastEndDate = calculationResult.lastEndDate;
+                for (
+                  let k = 0;
+                  k < calculationResult.totalAppointments.length;
+                  k++
+                ) {
+                  this.totalAppointments.push(
+                    calculationResult.totalAppointments[k]
+                  );
+                }
+                this.dependencies[i].lastCalculatedDate = lastEndDate;
+              }
+
+              await t.set(
+                "board",
+                "private",
+                "exportServerName",
+                this.exportServerName
+              );
+              await t.set(
+                "board",
+                "private",
+                "exportEnabled",
+                this.exportEnabled
+              );
+
+              if (this.exportEnabled) {
+                let bodyFormData = new FormData();
+
+                let cal = this.processExportAsIcs();
+
+                var blob;
+                if (navigator.userAgent.indexOf("MSIE 10") === -1) {
+                  // chrome or firefox
+                  blob = new Blob([cal.calendar()], { type: "text/calendar" });
+                } else {
+                  // ie
+                  var bb = new BlobBuilder();
+                  bb.append(cal.calendar());
+                  blob = bb.getBlob(
+                    "text/x-vCalendar;charset=" + document.characterSet
+                  );
+                }
+
+                bodyFormData.append(
+                  "ics",
+                  blob,
+                  this.exportServerName + ".ics"
+                );
+
+                let that = this;
+                axios({
+                  method: "post",
+                  url: this.exportServer + "/ics-upload",
+                  data: bodyFormData,
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                    token: this.exportServerKey,
+                    filename: this.exportServerName + ".ics"
+                  }
+                }).then(function(response) {
+                  that.exportSuccess = true;
+                  that.exportCalUrl =
+                    that.exportServer + response.data.data.url;
+                });
+              }
+
+              this.currentRunningIndex = null;
+              this.calculationStatus = 2;
+            },
+            higherDependency: function(index) {
+              let b = this.dependencies[index];
+              Vue.set(this.dependencies, index, this.dependencies[index - 1]);
+              Vue.set(this.dependencies, index - 1, b);
+            },
+            lowerDependency: function(index) {
+              let b = this.dependencies[index];
+              Vue.set(this.dependencies, index, this.dependencies[index + 1]);
+              Vue.set(this.dependencies, index + 1, b);
+            },
+            removeDependency: function(index) {
+              if (
+                this.calculationStatus === 0 &&
+                this.dependencies.length > 1
+              ) {
+                this.dependencies.splice(index, 1);
+
+                setTimeout(function() {
+                  t.sizeTo("#content");
+                }, 100);
+              }
+            },
+            readAllDependencies: async function() {
+              let loop = true;
+              let currentList = this.dependencies[0];
+              let counter = 0;
+              while (loop) {
+                if (!currentList) {
+                  break;
+                }
+                let dependencyListId = await t.get(
+                  "board",
+                  "private",
+                  currentList.id + "dependencyListId"
+                );
+                let listIsActive = await t.get(
+                  "board",
+                  "private",
+                  currentList.id + "isActive"
+                );
+                if (dependencyListId && listIsActive) {
+                  currentList = this.findListById(dependencyListId);
+                  if (currentList) {
+                    this.dependencies.push(currentList);
+                  }
+                } else {
+                  break;
+                }
+
+                if (counter > 20) {
+                  break;
+                }
+                counter++;
+              }
+            },
+            closeModal() {
+              t.closeModal();
+            }
+          }
+        });
+      </script>
     </div>
-  </div>
+    <style>
+      .chip {
+        display: inline-block;
+        padding: 0 25px;
+        height: 50px;
+        font-size: 16px;
+        line-height: 50px;
+        border-radius: 25px;
+        background-color: #f1f1f1;
+      }
 
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-  <script src="../js/libs/vue.js"></script>
-  <script src="../js/libs/axios.min.js"></script>
-  <script src="../js/libs/jquery.min.js"></script>
-  <script src="../js/libs/rrule.js"></script>
-  <script src="../js/libs/moment.js"></script>
-  <script src="../js/libs/ical.js"></script>
-  <script src="../js/libs/ics.min.js"></script>
-  <script src="../js/libs/FileSaver.min.js"></script>
-  <script src="../js/libs/Blob.js"></script>
-  <script src="../js/calsync.js"></script>
-  <script src="../js/calprocess.js"></script>
+      .loader {
+        border: 8px solid #f3f3f3; /* Light grey */
+        border-top: 8px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 2s linear infinite;
+        margin-left: 2px;
+        display: inline-block;
+      }
 
-  <script>
-    var t = TrelloPowerUp.iframe();
-
-    new Vue({
-      el: "#calculation-area",
-      data: {
-        listId: null,
-        lists: [],
-        currentList: null,
-        selectedList: null,
-        dependencies: [],
-        calculationStatus: 0,
-        currentRunningIndex: null,
-        totalAppointments: [],
-        exportEnabled: false,
-        exportServer: null,
-        exportServerKey: null,
-        exportServerName: "",
-        exportSuccess: false,
-        exportCalUrl: ""
-      },
-      watch: {
-        exportEnabled: function() {
-          setTimeout(function() {
-            t.sizeTo("#content");
-          }, 400);
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-      },
-      mounted() {
-        this.listId = t.arg("listId");
-        this.listName = t.arg("listName");
-        this.initData();
-      },
-      methods: {
-        initData: async function() {
-          let that = this;
-
-          this.exportServer = await t.get(
-                  "board",
-                  "private",
-                  "exportServer"
-          );
-
-          if (!this.exportServer) {
-            this.exportEnabled = false;
-          } else {
-            this.exportEnabled = await t.get(
-                    "board",
-                    "private",
-                    "exportEnabled"
-            );
-          }
-          this.exportServerKey = await t.get(
-                  "board",
-                  "private",
-                  "exportServerKey"
-          );
-          this.exportServerName = await t.get(
-                  "board",
-                  "private",
-                  "exportServerName"
-          );
-
-          var token = await t.get("board", "private", "token");
-          var member = await t.member("all");
-          var key = "5db50da477d5b9033e479892f742bf8d";
-
-          this.lists = await t.lists("all");
-
-          let listsToDelete = [];
-          for (j = 0; j < this.lists.length; j++) {
-            let listTmp = this.lists[j];
-            let linkToCalTmp = await t.get(
-                    "board",
-                    "private",
-                    listTmp.id + "isActive"
-            );
-            if (!linkToCalTmp) {
-              listsToDelete.push(j);
-            }
-          }
-          for (j = listsToDelete.length - 1; j >= 0; j--) {
-            let listToDelete = listsToDelete[j];
-            this.lists.splice(listToDelete, 1);
-          }
-
-          let list = this.lists.find(element => element.id === that.listId);
-          if (list) {
-            that.dependencies.push({
-              id: list.id,
-              name: list.name,
-              lastCalculatedDate: null
-            });
-            this.lists.splice(this.lists.indexOf(list), 1);
-          }
-
-          that.readAllDependencies();
-
-          setTimeout(function() {
-            t.sizeTo("#content");
-          }, 100);
-        },
-        processExportAsIcs: function() {
-          var cal = ics();
-
-          for (let k = 0; k < this.totalAppointments.length; k++) {
-            var appointment = this.totalAppointments[k];
-            var subject = appointment.cardName;
-            var startDate = moment(appointment.startDate).format();
-            var endDate = moment(appointment.endDate).format();
-            cal.addEvent(subject, "", "", startDate, endDate);
-          }
-
-          return cal;
-        },
-        exportAsIcs: function() {
-          var cal = this.processExportAsIcs();
-          cal.download("smart-deadlines");
-        },
-        findListById: function(idOfList) {
-          let list = this.lists.find(element => element.id === idOfList);
-          if (list) {
-            return {
-              id: list.id,
-              name: list.name,
-              lastCalculatedDate: null
-            };
-          }
-        },
-        addList: function() {
-          this.dependencies.push({
-            id: this.selectedList.id,
-            name: this.selectedList.name,
-            lastCalculatedDate: null
-          });
-          setTimeout(function() {
-            t.sizeTo("#content");
-          }, 100);
-        },
-        execute: async function() {
-          if (this.calculationStatus > 0) {
-            t.closeModal();
-            return;
-          }
-
-          this.calculationStatus = 1;
-          let lastEndDate = moment();
-          for (let i = this.dependencies.length - 1; i >= 0; i--) {
-            this.currentRunningIndex = i;
-            var calculationResult = await startDateCalculation(
-                    t,
-                    this.dependencies[i].id,
-                    lastEndDate
-            );
-            if (!calculationResult.lastEndDate) {
-              continue;
-            }
-            lastEndDate = calculationResult.lastEndDate;
-            for (let k = 0; k < calculationResult.totalAppointments.length; k++) {
-              this.totalAppointments.push(
-                      calculationResult.totalAppointments[k]
-              );
-            }
-            this.dependencies[i].lastCalculatedDate = lastEndDate;
-          }
-
-          await t.set(
-                  "board",
-                  "private",
-                  "exportServerName",
-                  this.exportServerName
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  "exportEnabled",
-                  this.exportEnabled
-          );
-
-          if (this.exportEnabled) {
-            let bodyFormData = new FormData();
-
-            let cal = this.processExportAsIcs();
-
-            var blob;
-            if (navigator.userAgent.indexOf("MSIE 10") === -1) {
-              // chrome or firefox
-              blob = new Blob([cal.calendar()], { type: "text/calendar" });
-            } else {
-              // ie
-              var bb = new BlobBuilder();
-              bb.append(cal.calendar());
-              blob = bb.getBlob(
-                      "text/x-vCalendar;charset=" + document.characterSet
-              );
-            }
-
-            bodyFormData.append(
-                    "ics",
-                    blob,
-                    this.exportServerName + ".ics"
-            );
-
-            let that = this;
-            axios({
-              method: "post",
-              url: this.exportServer + "/ics-upload",
-              data: bodyFormData,
-              headers: {
-                "Content-Type": "multipart/form-data",
-                token: this.exportServerKey,
-                filename: this.exportServerName + ".ics"
-              }
-            }).then(function(response) {
-              that.exportSuccess = true;
-              that.exportCalUrl =
-                      that.exportServer + response.data.data.url;
-            });
-          }
-
-          this.currentRunningIndex = null;
-          this.calculationStatus = 2;
-        },
-        higherDependency: function(index) {
-          let b = this.dependencies[index];
-          Vue.set(this.dependencies, index, this.dependencies[index - 1]);
-          Vue.set(this.dependencies, index - 1, b);
-        },
-        lowerDependency: function(index) {
-          let b = this.dependencies[index];
-          Vue.set(this.dependencies, index, this.dependencies[index + 1]);
-          Vue.set(this.dependencies, index + 1, b);
-        },
-        removeDependency: function(index) {
-          if (
-                  this.calculationStatus === 0 &&
-                  this.dependencies.length > 1
-          ) {
-            this.dependencies.splice(index, 1);
-
-            setTimeout(function() {
-              t.sizeTo("#content");
-            }, 100);
-          }
-        },
-        readAllDependencies: async function() {
-          let loop = true;
-          let currentList = this.dependencies[0];
-          let counter = 0;
-          while (loop) {
-            if (!currentList) {
-              break;
-            }
-            let dependencyListId = await t.get(
-                    "board",
-                    "private",
-                    currentList.id + "dependencyListId"
-            );
-            let listIsActive = await t.get(
-                    "board",
-                    "private",
-                    currentList.id + "isActive"
-            );
-            if (dependencyListId && listIsActive) {
-              currentList = this.findListById(dependencyListId);
-              if (currentList) {
-                this.dependencies.push(currentList);
-              }
-            } else {
-              break;
-            }
-
-            if (counter > 20) {
-              break;
-            }
-            counter++;
-          }
-        },
-        closeModal() {
-          t.closeModal();
+        100% {
+          transform: rotate(360deg);
         }
       }
-    });
-  </script>
-</div>
-<style>
-  .chip {
-    display: inline-block;
-    padding: 0 25px;
-    height: 50px;
-    font-size: 16px;
-    line-height: 50px;
-    border-radius: 25px;
-    background-color: #f1f1f1;
-  }
-
-  .loader {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 2s linear infinite;
-    margin-left: 2px;
-    display: inline-block;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-</style>
-</body>
+    </style>
+  </body>
 </html>

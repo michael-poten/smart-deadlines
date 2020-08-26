@@ -32,19 +32,6 @@ let getListById = async function (t, listId) {
     );
 };
 
-let getPluginDataForCard = async function (t, cardId) {
-    let token = await t.get("board", "private", "token");
-    let key = "5db50da477d5b9033e479892f742bf8d";
-    return await $.get(
-        "https://api.trello.com/1/cards/" +
-        cardId +
-        "/pluginData?key=" +
-        key +
-        "&token=" +
-        token
-    );
-};
-
 let removeDueDate = async function (t, card) {
     let token = await t.get("board", "private", "token");
     let key = "5db50da477d5b9033e479892f742bf8d";
