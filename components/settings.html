@@ -3,30 +3,21 @@
   <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
-<body>
+<body style="overflow: hidden">
 <div id="settings-area">
   <div id="content">
     <div id="settings">
-      <div v-if="!isGlobalSettings">
+      <div>
         <input
-                type="checkbox"
-                id="listSettingsActive"
-                name="isContinuous"
-                style="margin-left: 3px"
-                v-model="listSettingsActive"
+            type="checkbox"
+            id="listSettingsActive"
+            name="listSettingsActive"
+            style="margin-left: 3px"
+            v-model="listSettingsActive"
         />
         <h4 for="listSettingsActive" style="display: inline">
           Overwrite global settings
         </h4>
-      </div>
-      <div v-if="isGlobalSettings">
-        <p>Link to iCal-Calendar:</p>
-        <input
-                type="text"
-                id="linkToCal"
-                v-model="linkToCal"
-                :disabled="!listSettingsActive"
-        />
       </div>
       <p>Distribute over several appointments:</p>
       <input
@@ -45,35 +36,7 @@
               :disabled="!listSettingsActive"
       />
       <small>Empty uses all events.</small>
-      <div v-if="isGlobalSettings">
-        <hr />
-        <h5>
-          Own SmartDeadline server
-        </h5>
-        <div>
-              <span>
-                Server:
-              </span>
-          <input
-                  type="text"
-                  id="exportServer"
-                  name="exportServer"
-                  v-model="exportServer"
-          />
-        </div>
-        <div>
-          <div>
-            Password:
-          </div>
-          <input
-                  type="text"
-                  id="exportServerKey"
-                  name="exportServerKey"
-                  v-model="exportServerKey"
-          />
-        </div>
-      </div>
-      <div v-if="!isGlobalSettings">
+      <div>
         <hr />
         <h4>
           Set dependency
@@ -109,7 +72,7 @@
           Save
         </button>
       </p>
-      <div style="text-align:center" v-if="!isGlobalSettings">
+      <div style="text-align:center">
         <a href @click="deactivateList">
           Deactivate SD for list
         </a>
@@ -134,58 +97,16 @@
       linkToCal: null,
       isContinuous: true,
       patternToUse: "",
-      isGlobalSettings: false,
       listSettingsActive: false,
       exportServer: null,
       exportServerKey: null
     },
     mounted() {
-      this.isGlobalSettings = t.arg("isGlobalSettings");
-
-      if (this.isGlobalSettings) {
-        this.initGlobalData();
-        this.listSettingsActive = true;
-      } else {
-        this.listId = t.arg("listId");
-        this.listName = t.arg("listName");
-        this.initData();
-      }
+      this.listId = t.arg("listId");
+      this.listName = t.arg("listName");
+      this.initData();
     },
     methods: {
-      initGlobalData: async function() {
-        this.linkToCal = await t.get("board", "private", "linkToCal");
-
-        this.isContinuous = await t.get(
-                "board",
-                "private",
-                "isContinuous"
-        );
-        if (this.isContinuous === undefined) {
-          this.isContinuous = true;
-        }
-
-        this.patternToUse = await t.get(
-                "board",
-                "private",
-                "patternToUse"
-        );
-
-        this.exportServer = await t.get(
-                "board",
-                "private",
-                "exportServer"
-        );
-
-        this.exportServerKey = await t.get(
-                "board",
-                "private",
-                "exportServerKey"
-        );
-
-        setTimeout(function() {
-          t.sizeTo("#content").done();
-        }, 100);
-      },
       initData: async function() {
         this.isContinuous = await t.get(
                 "board",
@@ -257,71 +178,38 @@
           );
           this.selectedList = listSelected;
         }
-
-        setTimeout(function() {
-          t.sizeTo("#content").done();
-        }, 100);
-        t.sizeTo(420);
       },
       deactivateList: async function() {
         await t.remove("board", "private", this.listId + "isActive");
         return t.closePopup();
       },
       saveData: async function() {
-        if (this.isGlobalSettings) {
-          await t.set("board", "private", "linkToCal", this.linkToCal);
-          await t.set(
-                  "board",
-                  "private",
-                  "isContinuous",
-                  this.isContinuous
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  "patternToUse",
-                  this.patternToUse
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  "exportServer",
-                  this.exportServer
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  "exportServerKey",
-                  this.exportServerKey
-          );
-        } else {
-          await t.set(
-                  "board",
-                  "private",
-                  this.listId + "isContinuous",
-                  this.isContinuous
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  this.listId + "patternToUse",
-                  this.patternToUse
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  this.listId + "listSettingsActive",
-                  this.listSettingsActive
-          );
-          await t.set(
-                  "board",
-                  "private",
-                  this.listId + "dependencyListId",
-                  this.selectedList && this.selectedList.id
-                          ? this.selectedList.id
-                          : null
-          );
-        }
+        await t.set(
+                "board",
+                "private",
+                this.listId + "isContinuous",
+                this.isContinuous
+        );
+        await t.set(
+                "board",
+                "private",
+                this.listId + "patternToUse",
+                this.patternToUse
+        );
+        await t.set(
+                "board",
+                "private",
+                this.listId + "listSettingsActive",
+                this.listSettingsActive
+        );
+        await t.set(
+                "board",
+                "private",
+                this.listId + "dependencyListId",
+                this.selectedList && this.selectedList.id
+                        ? this.selectedList.id
+                        : null
+        );
 
         this.closePopup();
       },

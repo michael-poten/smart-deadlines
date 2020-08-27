@@ -12,16 +12,15 @@
               v-if="estimation > 0"
               id="estimation"
               name="estimation"
-              style="margin-left: 3px; width: 80px; display: inline"
+              class="estimation__display"
                   >
-            {{ estimation | formatDuration }} hours</span>
+            {{ estimation | formatDuration }}</span>
             <span
               v-if="estimation === 0"
               id="estimation"
               name="estimation"
-              style="margin-left: 3px; width: 80px; display: inline"
-                  >
-            00:00 hours</span>
+              class="estimation__display">
+            0:00 hours</span>
             <button
               id="addQuarterHour"
               class="mod-primary"
@@ -34,14 +33,22 @@
               id="addHour"
               class="mod-primary"
               @click="addHour"
-              style="margin-left: 3px; display: inline"
+              style="display: inline"
             >
               + 1 hour
             </button>
             <button
+              id="addMoreHours"
+              class="mod-primary"
+              @click="addMoreHours"
+              style="display: inline"
+            >
+              + 5 hours
+            </button>
+            <button
               id="resetEstimation"
               @click="resetEstimation"
-              style="margin-left: 3px; display: inline"
+              style="display: inline"
             >
               Reset
             </button>
@@ -61,16 +68,7 @@
 
       <script src="https://p.trellocdn.com/power-up.min.js"></script>
       <script src="../js/libs/vue.js"></script>
-      <script src="../js/libs/axios.min.js"></script>
-      <script src="../js/libs/jquery.min.js"></script>
-      <script src="../js/libs/rrule.js"></script>
       <script src="../js/libs/moment.js"></script>
-      <script src="../js/libs/ical.js"></script>
-      <script src="../js/libs/ics.min.js"></script>
-      <script src="../js/libs/FileSaver.min.js"></script>
-      <script src="../js/libs/Blob.js"></script>
-      <script src="../js/calsync.js"></script>
-      <script src="../js/calprocess.js"></script>
 
       <script>
         var t = window.TrelloPowerUp.iframe();
@@ -89,13 +87,15 @@
           filters: {
             formatDuration: function (value) {
               if (value) {
-                return moment.utc(moment.duration(value, "minutes").as('milliseconds')).format("HH:mm");
+                var durationInMinutes = moment.duration(value, "minutes");
+                return parseInt(durationInMinutes.asHours()) + ':' + moment.utc(durationInMinutes.as('milliseconds')).format("mm") + ' hours';
               }
             }
           },
           methods: {
             formatOfDuration: function(value) {
-              return moment.utc(moment.duration(value, "minutes").as('milliseconds')).format("HH:mm");
+                var durationInMinutes = moment.duration(value, "minutes");
+                return parseInt(durationInMinutes.asHours()) + ':' + moment.utc(durationInMinutes.as('milliseconds')).format("mm");
             },
             addQuarterHour: function() {
               this.estimation = this.estimation + 15;
@@ -108,6 +108,15 @@
             },
             addHour: function() {
               this.estimation = this.estimation + 60;
+              if (!this.estimationData) {
+                this.estimationData = {};
+              }
+              this.estimationData.estimation = this.estimation;
+              this.estimationData.text = this.formatOfDuration(this.estimation);
+              t.set("card", "shared", "estimation", this.estimationData);
+            },
+            addMoreHours: function() {
+              this.estimation = this.estimation + 300;
               if (!this.estimationData) {
                 this.estimationData = {};
               }
@@ -169,6 +178,17 @@
       </script>
     </div>
     <style>
+      .estimation__display {
+        text-align: center; 
+        margin-left: 3px; 
+        min-width: 110px; 
+        display: inline-block; 
+        font-weight: 700; 
+        font-size: 1.1em; 
+        background-color: #e5e5e5; 
+        border-radius: 3px; 
+        padding: 7px;
+      }
       .chip {
         display: inline-flex;
         flex-direction: row;

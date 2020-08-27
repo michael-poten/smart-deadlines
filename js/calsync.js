@@ -65,7 +65,7 @@ var extractDates = function(t, listId, rangeStartInput) {
     let rangeEnd = rangeStartInput
       .clone()
       .startOf("day")
-      .add(3, "months");
+      .add(12, "months");
 
     let events = [];
 

@@ -1,0 +1,140 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body style="overflow: hidden">
+    <div id="settings-area">
+      <div id="content">
+        <div id="settings">
+          <div>
+            <p>Link to iCal-Calendar:</p>
+            <input
+              type="text"
+              id="linkToCal"
+              v-model="linkToCal"
+            />
+          </div>
+          <p>Distribute over several appointments:</p>
+          <input
+            type="checkbox"
+            id="isContinuous"
+            name="isContinuous"
+            style="margin-left: 3px"
+            v-model="isContinuous"
+          />
+          <p>Only appointments containing this title:</p>
+          <input
+            type="text"
+            id="patternToUse"
+            v-model="patternToUse"
+          />
+          <small>Empty uses all events.</small>
+          <div>
+            <hr />
+            <h5>
+              Own SmartDeadline server
+            </h5>
+            <div>
+              <span>
+                Server:
+              </span>
+              <input
+                type="text"
+                id="exportServer"
+                name="exportServer"
+                v-model="exportServer"
+              />
+            </div>
+            <div>
+              <div>
+                Password:
+              </div>
+              <input
+                type="text"
+                id="exportServerKey"
+                name="exportServerKey"
+                v-model="exportServerKey"
+              />
+            </div>
+          </div>
+          <p>
+            <button
+              id="save"
+              class="mod-primary"
+              style="width:100%"
+              @click="saveData"
+            >
+              Save
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="../js/libs/vue.js"></script>
+    <script src="../js/libs/axios.min.js"></script>
+    <script src="../js/libs/jquery.min.js"></script>
+    <script>
+      var t = TrelloPowerUp.iframe();
+
+      new Vue({
+        el: "#settings-area",
+        data: {
+          lists: [],
+          selectedList: null,
+          listId: null,
+          linkToCal: null,
+          isContinuous: true,
+          patternToUse: "",
+          exportServer: null,
+          exportServerKey: null
+        },
+        mounted() {
+            this.initGlobalData();
+          
+        },
+        methods: {
+          initGlobalData: async function() {
+            this.linkToCal = await t.get("board", "private", "linkToCal");
+
+            this.isContinuous = await t.get("board", "private", "isContinuous");
+            if (this.isContinuous === undefined) {
+              this.isContinuous = true;
+            }
+
+            this.patternToUse = await t.get("board", "private", "patternToUse");
+
+            this.exportServer = await t.get("board", "private", "exportServer");
+
+            this.exportServerKey = await t.get(
+              "board",
+              "private",
+              "exportServerKey"
+            );
+          },
+          saveData: async function() {
+            await t.set("board", "private", "linkToCal", this.linkToCal);
+            await t.set("board", "private", "isContinuous", this.isContinuous);
+            await t.set("board", "private", "patternToUse", this.patternToUse);
+            await t.set("board", "private", "exportServer", this.exportServer);
+            await t.set(
+              "board",
+              "private",
+              "exportServerKey",
+              this.exportServerKey
+            );
+
+            this.closePopup();
+          },
+          closePopup() {
+            t.closePopup();
+          }
+        }
+      });
+    </script>
+
+    <style></style>
+  </body>
+</html>

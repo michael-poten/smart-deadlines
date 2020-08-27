@@ -14,7 +14,12 @@ let estimationSelectionString = function(estimation, value) {
   return estimation ? (estimation.estimation === value ? " ✓" : "") : "";
 };
 
-let getBadges = function(t, isEditMode) {
+let getBadges = async function(t, isEditMode) {
+  let list = await t.list("name", "id");
+  let isActive = await t.get("board", "private", list.id + "isActive");
+  if (!isActive) {
+    return [];
+  }
   return t
     .card("id")
     .get("id")
@@ -36,30 +41,10 @@ let getBadges = function(t, isEditMode) {
       let appointments = await t.get(id, "shared", "appointments");
       if (appointments && appointments.length > 1
       ) {
-        let appointmentTexts = [];
-        for (let i = 0; i < appointments.length; i++) {
-          let appointment = appointments[i];
-          let startDateTmp = moment(appointment.startDate);
-          let endDateTmp = moment(appointment.endDate);
-          appointmentTexts.push({
-            text:
-              startDateTmp.format("D[.] MMMM") +
-              " " +
-              startDateTmp.format("H:mm") +
-              " - " +
-              endDateTmp.format("H:mm")
-          });
-        }
         let appointmentsBadge = {
           title: "Appointments",
           text: appointments.length + " Appointments",
           icon: COUNTER_GRAY_ICON,
-          callback: function(context) {
-            context.popup({
-              title: "Appointment dates",
-              items: appointmentTexts
-            });
-          }
         };
         badges.push(appointmentsBadge);
       }
@@ -73,7 +58,14 @@ TrelloPowerUp.initialize(
     "card-badges": function(t) {
       return getBadges(t);
     },
-    "card-back-section": function(t, options) {
+    "card-back-section": async function(t, options) {
+      
+      let list = await t.list("name", "id");
+      let isActive = await t.get("board", "private", list.id + "isActive");
+      if (!isActive) {
+        return;
+      }
+      
       return {
         title: "Estimation",
         icon: GRAY_ICON, // Must be a gray icon, colored icons not allowed.
@@ -97,7 +89,7 @@ TrelloPowerUp.initialize(
                   url: "../components/calculation.html",
                   accentColor: "#CDD3D8",
                   args: { listId: list.id, listName: list.name },
-                  height: 300,
+                  height: 412,
                   fullscreen: false,
                   title: "Calculation of smart deadlines",
                   actions: []
@@ -109,9 +101,9 @@ TrelloPowerUp.initialize(
               callback: function(t2) {
                 return t2.popup({
                   title: "Settings for list",
-                  url: "../components/settings-new.html",
+                  url: "../components/settings.html",
                   args: { listId: list.id, listName: list.name },
-                  height: 350
+                  height: 362
                 });
               }
             }
@@ -148,9 +140,8 @@ TrelloPowerUp.initialize(
     "show-settings": function(t) {
       return t.popup({
         title: "Global Settings",
-        url: "../components/settings-new.html",
-        args: { isGlobalSettings: true },
-        height: 340
+        url: "../components/settings-global.html",
+        height: 467
       });
     },
     "authorization-status": function(t) {

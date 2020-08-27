@@ -264,12 +264,6 @@ let startDateCalculation = async function (t, listId, startDate) {
                 }
             }
 
-            t.alert({
-                message: "All due dates in list calculated!",
-                duration: 6,
-                display: "success"
-            });
-
             resolve({
               lastEndDate: lastEndDate,
               totalAppointments: totalAppointments

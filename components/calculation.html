@@ -4,41 +4,128 @@
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
   </head>
   <body>
-    <div id="content" style="padding:10px;">
+    <div id="content">
       <div id="calculation-area">
-        <div>
-          <div>
-            <span style="display: inline-block; margin-left: 10px">
-              <div>
-                List
-              </div>
-              <div>
-                <select
-                  v-model="selectedList"
-                  :disabled="calculationStatus >= 1"
-                >
-                  <option
-                    v-for="list in lists"
-                    v-bind:value="list"
-                    :key="list.id"
+        <div style="float: left; width: 40%;">
+          <div style="padding:20px;">
+            <h3>
+              Options for calculation
+            </h3>
+            <div>
+              <label for="startDateInput" style="float: left; margin-right: 5px;">
+                Start date:
+              </label>
+              <span
+                style="display: block; overflow: hidden;"
+              >
+                <input
+                    type="date"
+                    id="startDateInput"
+                    name="startDateInput"
+                    placeholder="Start date"
+                    style="width: 100%;"
+                    :disabled="calculationStatus >= 1"
+                    v-model="startDateInput"
+                  />
+              </span>
+
+
+            </div>
+            <hr/>
+            <div v-if="calculationStatus === 0">
+              <span style="display: inline-block;">
+                <div>
+                  <select
+                    v-model="selectedList"
+                    :disabled="calculationStatus >= 1"
                   >
-                    {{ list.name }}
-                  </option>
-                </select>
+                    <option
+                      v-for="list in lists"
+                      v-bind:value="list"
+                      :key="list.id"
+                    >
+                      {{ list.name }}
+                    </option>
+                  </select>
+                </div>
+              </span>
+              <button
+                :disabled="calculationStatus >= 1"
+                id="addList"
+                class="mod-secondary"
+                @click="addList"
+                style="margin-left: 10px"
+              >
+                Add as dependency
+              </button>
+              <hr />
+            </div>
+            <div v-if="exportServer">
+              <input
+                type="checkbox"
+                id="exportEnabled"
+                name="exportEnabled"
+                :disabled="calculationStatus === 2"
+                style="margin-left: 3px"
+                v-model="exportEnabled"
+              />
+              <div for="exportEnabled" style="display: inline">
+                Export to server after finish
               </div>
-            </span>
-            <button
-              :disabled="calculationStatus >= 1"
-              id="addList"
-              class="mod-secondary"
-              @click="addList"
-              style="margin-left: 10px"
-            >
-              Add as dependency
-            </button>
+              <div v-if="exportEnabled">
+                <label for="exportServerName" style="float: left; margin-right: 5px;">
+                  Key:
+                </label>
+                <span
+                  style="display: block; overflow: hidden;"
+                >
+                  <input
+                    type="text"
+                    id="exportServerName"
+                    name="exportServerName"
+                    :disabled="calculationStatus === 2"
+                    style="width: 100%"
+                    v-model="exportServerName"
+                  />
+                </span>
+
+                <input
+                  type="text"
+                  id="exportCalUrl"
+                  name="exportCalUrl"
+                  placeholder="Generated iCal-URL"
+                  style="width: 100%;"
+                  :readonly="true"
+                  v-model="exportCalUrl"
+                />
+              </div>
+            </div>
+            <hr/>
+            <div style="text-align:right; width: 100%">
+              <span v-if="calculationStatus >= 1">
+                <button id="exportAsIcs" @click="exportAsIcs" :disabled="calculationStatus <= 1">
+                  Export as .ics file
+                </button>
+              </span>
+
+              <span v-if="calculationStatus === 0">
+                <button
+                  id="execute"
+                  class="mod-primary"
+                  @click="execute"
+                >
+                  Execute
+                </button>
+              </span>
+            </div>
           </div>
-          <hr />
-          <div style="text-align:center; font-size: 1.2em">
+        </div>
+        <div
+          style="float: right; width: 60%; overflow: auto; height: 100%; background-color: #d8dfe6"
+        >
+          <div
+            style="text-align:center; font-size: 1.2em; padding:10px; margin-top: 10px"
+          >
             <div v-if="exportEnabled">
               <span class="chip" style="background-color: #b4d1c0">
                 Upload to server
@@ -70,14 +157,14 @@
                 </button>
               </span>
               <span
-                style="margin-left: 2px; width: 120px; display: inline-block; vertical-align: middle"
+                style="margin-left: 2px; width: 75px; display: inline-block; vertical-align: middle"
                 v-if="dependency.lastCalculatedDate"
               >
                 <div>
-                  {{ dependency.lastCalculatedDate.format(("D[.] MMMM")) }}
+                  {{ dependency.lastCalculatedDate.format("D[.] MMM") }}
                 </div>
                 <div>
-                  {{ dependency.lastCalculatedDate.format(("H:mm")) }} o'clock
+                  {{ dependency.lastCalculatedDate.format("H:mm") }}
                 </div>
               </span>
               <div
@@ -112,61 +199,6 @@
                 👌
               </span>
             </div>
-          </div>
-          <hr />
-          <div v-if="exportServer">
-            <input
-              type="checkbox"
-              id="exportEnabled"
-              name="exportEnabled"
-              :disabled="calculationStatus === 2"
-              style="margin-left: 3px"
-              v-model="exportEnabled"
-            />
-            <div for="exportEnabled" style="display: inline">
-              Export to server after finish
-            </div>
-            <div v-if="exportEnabled">
-              <span for="exportServerKey">
-                Key:
-              </span>
-              <input
-                type="text"
-                id="exportServerName"
-                name="exportServerName"
-                :disabled="calculationStatus === 2"
-                style="margin-left: 3px; display:inline; width: 233px"
-                v-model="exportServerName"
-              />
-              <input
-                type="text"
-                id="exportCalUrl"
-                name="exportCalUrl"
-                placeholder="Generated iCal-URL"
-                style="margin-left: 3px; width: 430px; display: inline"
-                :readonly="true"
-                v-model="exportCalUrl"
-              />
-            </div>
-            <hr />
-          </div>
-          <div style="text-align:right; width: 100%">
-            <span v-if="calculationStatus === 2">
-              <button id="exportAsIcs" @click="exportAsIcs">
-                Export as .ics file
-              </button>
-            </span>
-
-            <span>
-              <button
-                id="execute"
-                class="mod-primary"
-                @click="execute"
-                :disabled="calculationStatus === 1"
-              >
-                {{ calculationStatus === 0 ? 'Execute' : 'Close'}}
-              </button>
-            </span>
           </div>
         </div>
       </div>
@@ -203,16 +235,11 @@
             exportServerKey: null,
             exportServerName: "",
             exportSuccess: false,
-            exportCalUrl: ""
-          },
-          watch: {
-            exportEnabled: function() {
-              setTimeout(function() {
-                t.sizeTo("#content");
-              }, 400);
-            }
+            exportCalUrl: "",
+            startDateInput: null
           },
           mounted() {
+            this.startDateInput = moment().format("YYYY[-]MM[-]DD");
             this.listId = t.arg("listId");
             this.listName = t.arg("listName");
             this.initData();
@@ -281,10 +308,6 @@
               }
 
               that.readAllDependencies();
-
-              setTimeout(function() {
-                t.sizeTo("#content");
-              }, 100);
             },
             processExportAsIcs: function() {
               var cal = ics();
@@ -319,18 +342,22 @@
                 name: this.selectedList.name,
                 lastCalculatedDate: null
               });
-              setTimeout(function() {
-                t.sizeTo("#content");
-              }, 100);
             },
             execute: async function() {
+              let startDateObject;
+              if (moment().format("YYYY[-]MM[-]DD") === this.startDateInput){
+                startDateObject = moment();
+              } else {
+                startDateObject = moment(this.startDateInput, 'YYYY-MM-DD').startOf("day");
+              }
+              
               if (this.calculationStatus > 0) {
                 t.closeModal();
                 return;
               }
 
               this.calculationStatus = 1;
-              let lastEndDate = moment();
+              let lastEndDate = startDateObject;
               for (let i = this.dependencies.length - 1; i >= 0; i--) {
                 this.currentRunningIndex = i;
                 var calculationResult = await startDateCalculation(
@@ -427,10 +454,6 @@
                 this.dependencies.length > 1
               ) {
                 this.dependencies.splice(index, 1);
-
-                setTimeout(function() {
-                  t.sizeTo("#content");
-                }, 100);
               }
             },
             readAllDependencies: async function() {
