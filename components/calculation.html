@@ -54,7 +54,7 @@
                 id="addList"
                 class="mod-secondary"
                 @click="addList"
-                style="margin-left: 10px"
+                style="margin-left: 10px; font-size: 0.9em"
               >
                 Add as dependency
               </button>
@@ -345,7 +345,8 @@
             },
             execute: async function() {
               let startDateObject;
-              if (moment().format("YYYY[-]MM[-]DD") === this.startDateInput){
+              if (!this.startDateInput || moment().format("YYYY[-]MM[-]DD") === this.startDateInput){
+                this.startDateInput = moment().format("YYYY[-]MM[-]DD");
                 startDateObject = moment();
               } else {
                 startDateObject = moment(this.startDateInput, 'YYYY-MM-DD').startOf("day");
