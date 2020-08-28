@@ -6,32 +6,28 @@
   <body>
     <div id="content">
       <div id="calculation-area">
-        <div style="float: left; width: 40%;">
+        <div class="options-tile">
           <div style="padding:20px;">
             <h3>
               Options for calculation
             </h3>
             <div>
-              <label for="startDateInput" style="float: left; margin-right: 5px;">
+              <label for="startDateInput" class="generic__label">
                 Start date:
               </label>
-              <span
-                style="display: block; overflow: hidden;"
-              >
+              <span class="generic__label__content">
                 <input
-                    type="date"
-                    id="startDateInput"
-                    name="startDateInput"
-                    placeholder="Start date"
-                    style="width: 100%;"
-                    :disabled="calculationStatus >= 1"
-                    v-model="startDateInput"
-                  />
+                  type="date"
+                  id="startDateInput"
+                  name="startDateInput"
+                  placeholder="Start date"
+                  class="generic__width100"
+                  :disabled="calculationStatus >= 1"
+                  v-model="startDateInput"
+                />
               </span>
-
-
             </div>
-            <hr/>
+            <hr />
             <div v-if="calculationStatus === 0">
               <span style="display: inline-block;">
                 <div>
@@ -69,22 +65,20 @@
                 style="margin-left: 3px"
                 v-model="exportEnabled"
               />
-              <div for="exportEnabled" style="display: inline">
+              <span for="exportEnabled">
                 Export to server after finish
-              </div>
+              </span>
               <div v-if="exportEnabled">
-                <label for="exportServerName" style="float: left; margin-right: 5px;">
+                <label for="exportServerName" class="generic__label">
                   Key:
                 </label>
-                <span
-                  style="display: block; overflow: hidden;"
-                >
+                <span class="generic__label__content">
                   <input
                     type="text"
                     id="exportServerName"
                     name="exportServerName"
                     :disabled="calculationStatus === 2"
-                    style="width: 100%"
+                    class="generic__width100"
                     v-model="exportServerName"
                   />
                 </span>
@@ -94,46 +88,42 @@
                   id="exportCalUrl"
                   name="exportCalUrl"
                   placeholder="Generated iCal-URL"
-                  style="width: 100%;"
+                  class="generic__width100"
                   :readonly="true"
                   v-model="exportCalUrl"
                 />
               </div>
             </div>
-            <hr/>
+            <hr />
             <div style="text-align:right; width: 100%">
               <span v-if="calculationStatus >= 1">
-                <button id="exportAsIcs" @click="exportAsIcs" :disabled="calculationStatus <= 1">
+                <button
+                  id="exportAsIcs"
+                  @click="exportAsIcs"
+                  :disabled="calculationStatus <= 1"
+                >
                   Export as .ics file
                 </button>
               </span>
 
               <span v-if="calculationStatus === 0">
-                <button
-                  id="execute"
-                  class="mod-primary"
-                  @click="execute"
-                >
-                  Execute
+                <button id="execute" class="mod-primary" @click="execute">
+                  Run
                 </button>
               </span>
             </div>
           </div>
         </div>
-        <div
-          style="float: right; width: 60%; overflow: auto; height: 100%; background-color: #d8dfe6"
-        >
-          <div
-            style="text-align:center; font-size: 1.2em; padding:10px; margin-top: 10px"
-          >
+        <div class="server-upload">
+          <div class="server-upload__content">
+            <div v-if="errorText" class="generic__error">
+              {{ errorText }}
+            </div>
             <div v-if="exportEnabled">
               <span class="chip" style="background-color: #b4d1c0">
                 Upload to server
               </span>
-              <span
-                style="margin-left: 2px; width: 50px; display: inline-block;"
-                v-if="exportSuccess"
-              >
+              <span class="server-upload__content__ready" v-if="exportSuccess">
                 👌
               </span>
               <div>
@@ -145,7 +135,7 @@
                 ↑
               </div>
               <span
-                style="margin-right: 2px; width: 34px; display: inline-block;"
+                class="server-upload__content__ranking"
                 v-if="calculationStatus === 0"
               >
                 <button
@@ -157,7 +147,7 @@
                 </button>
               </span>
               <span
-                style="margin-left: 2px; width: 75px; display: inline-block; vertical-align: middle"
+                class="server-upload__content__last-date"
                 v-if="dependency.lastCalculatedDate"
               >
                 <div>
@@ -175,7 +165,7 @@
                 {{ dependency.name }}
               </div>
               <span
-                style="margin-left: 2px; width: 34px; display: inline-block;"
+                class="server-upload__content__ranking"
                 v-if="calculationStatus === 0"
               >
                 <button
@@ -187,15 +177,38 @@
                 </button>
               </span>
               <span
-                style="display: inline-block; vertical-align: middle"
+                class="server-upload__content__loader"
                 v-if="index === currentRunningIndex"
               >
                 <div class="loader"></div>
               </span>
               <span
-                style="margin-left: 2px; width: 50px; display: inline-block;"
-                v-if="dependency.lastCalculatedDate"
+                class="server-upload__content__ready"
+                v-if="dependency.lastCalculatedDate && !errorText"
               >
+                👌
+              </span>
+              <span
+                class="server-upload__content__ready"
+                v-if="dependency.hasError"
+              >
+                ⚠
+              </span>
+            </div>
+            <div>
+              <div>
+                ↑
+              </div>
+              <span class="chip" style="background-color: rgb(226, 206, 174)">
+                Download iCal-calendar
+              </span>
+              <span
+                class="server-upload__content__loader"
+                v-if="!downloadIcsSuccess && calculationStatus === 1"
+              >
+                <div class="loader"></div>
+              </span>
+              <span class="server-upload__content__ready" v-if="downloadIcsSuccess">
                 👌
               </span>
             </div>
@@ -210,7 +223,7 @@
       <script src="../js/libs/rrule.js"></script>
       <script src="../js/libs/moment.js"></script>
       <script src="../js/libs/ical.js"></script>
-      <script src="../js/libs/ics.min.js"></script>
+      <script src="../js/libs/ics.js"></script>
       <script src="../js/libs/FileSaver.min.js"></script>
       <script src="../js/libs/Blob.js"></script>
       <script src="../js/calsync.js"></script>
@@ -236,7 +249,9 @@
             exportServerName: "",
             exportSuccess: false,
             exportCalUrl: "",
-            startDateInput: null
+            startDateInput: null,
+            errorText: null,
+            downloadIcsSuccess: false
           },
           mounted() {
             this.startDateInput = moment().format("YYYY[-]MM[-]DD");
@@ -343,42 +358,20 @@
               });
             },
             execute: async function() {
+              
+              let that = this;
               let startDateObject;
-              if (!this.startDateInput || moment().format("YYYY[-]MM[-]DD") === this.startDateInput){
+              if (
+                !this.startDateInput ||
+                moment().format("YYYY[-]MM[-]DD") === this.startDateInput
+              ) {
                 this.startDateInput = moment().format("YYYY[-]MM[-]DD");
                 startDateObject = moment();
               } else {
-                startDateObject = moment(this.startDateInput, 'YYYY-MM-DD').startOf("day");
-              }
-              
-              if (this.calculationStatus > 0) {
-                t.closeModal();
-                return;
-              }
-
-              this.calculationStatus = 1;
-              let lastEndDate = startDateObject;
-              for (let i = this.dependencies.length - 1; i >= 0; i--) {
-                this.currentRunningIndex = i;
-                var calculationResult = await startDateCalculation(
-                  t,
-                  this.dependencies[i].id,
-                  lastEndDate
-                );
-                if (!calculationResult.lastEndDate) {
-                  continue;
-                }
-                lastEndDate = calculationResult.lastEndDate;
-                for (
-                  let k = 0;
-                  k < calculationResult.totalAppointments.length;
-                  k++
-                ) {
-                  this.totalAppointments.push(
-                    calculationResult.totalAppointments[k]
-                  );
-                }
-                this.dependencies[i].lastCalculatedDate = lastEndDate;
+                startDateObject = moment(
+                  this.startDateInput,
+                  "YYYY-MM-DD"
+                ).startOf("day");
               }
 
               await t.set(
@@ -394,7 +387,67 @@
                 this.exportEnabled
               );
 
-              if (this.exportEnabled) {
+              if (this.calculationStatus > 0) {
+                t.closeModal();
+                return;
+              }
+              
+              this.calculationStatus = 1;
+
+              await calsync()
+                .downloadIcalCalendar(t)
+                .then(async function(result) {
+                  that.icsData = result;
+                })
+                .catch(function(error) {
+                  that.errorText = error;
+                  that.breakLoop = true;
+                });
+
+              if (!this.breakLoop) {
+                this.downloadIcsSuccess = true;
+                let lastEndDate = startDateObject;
+
+                for (let i = this.dependencies.length - 1; i >= 0; i--) {
+                  this.currentRunningIndex = i;
+                  let breakLoop = false;
+                  
+                  await calprocess()
+                    .startDateCalculation(
+                      t,
+                      this.dependencies[i].id,
+                      lastEndDate,
+                     this.icsData
+                    )
+                    .then(function(calculationResult) {
+                      if (calculationResult.lastEndDate) {
+                        lastEndDate = calculationResult.lastEndDate;
+                        for (
+                          let k = 0;
+                          k < calculationResult.totalAppointments.length;
+                          k++
+                        ) {
+                          that.totalAppointments.push(
+                            calculationResult.totalAppointments[k]
+                          );
+                        }
+                        that.dependencies[i].lastCalculatedDate = lastEndDate;
+                      }
+                    })
+                    .catch(function(error) {
+                      console.log("error", error);
+                      that.dependencies[i].hasError = true;
+                      that.errorText = error;
+                      that.breakLoop = true;
+                    });
+
+                  if (this.breakLoop) {
+                    break;
+                  }
+                }
+              }
+
+              if (this.exportEnabled && !this.errorText) {
                 let bodyFormData = new FormData();
 
                 let cal = this.processExportAsIcs();
@@ -435,8 +488,12 @@
                 });
               }
 
+              if (this.errorText) {
+                this.calculationStatus = 0;
+              } else {
+                this.calculationStatus = 2;
+              }
               this.currentRunningIndex = null;
-              this.calculationStatus = 2;
             },
             higherDependency: function(index) {
               let b = this.dependencies[index];
@@ -525,6 +582,70 @@
         100% {
           transform: rotate(360deg);
         }
+      }
+
+      .generic__label {
+        float: left;
+        margin-right: 5px;
+      }
+
+      .generic__label__content {
+        display: block;
+        overflow: hidden;
+      }
+
+      .generic__width100 {
+        width: 100%;
+      }
+
+      .server-upload {
+        float: right;
+        width: 60%;
+        overflow: auto;
+        height: 100%;
+        background-color: #d8dfe6;
+      }
+
+      .server-upload__content {
+        text-align: center;
+        font-size: 1.2em;
+        padding: 10px;
+        margin-top: 10px;
+      }
+
+      .server-upload__content__ready {
+        margin-left: 2px;
+        width: 50px;
+        display: inline-block;
+      }
+
+      .server-upload__content__last-date {
+        margin-left: 2px;
+        width: 75px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .server-upload__content__ranking {
+        margin-right: 2px;
+        width: 34px;
+        display: inline-block;
+      }
+
+      .server-upload__content__loader {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .options-tile {
+        float: left;
+        width: 40%;
+      }
+
+      .generic__error {
+        margin-bottom: 15px;
+        background-color: #e9c2c2;
+        padding: 5px;
       }
     </style>
   </body>
