@@ -326,18 +326,24 @@
             processExportAsIcs: function() {
               var cal = ics();
 
+              debugger
+              
               for (let k = 0; k < this.totalAppointments.length; k++) {
-                var appointment = this.totalAppointments[k];
-                var subject = appointment.cardName;
-                var startDate = moment(appointment.startDate).format();
-                var endDate = moment(appointment.endDate).format();
-                cal.addEvent(subject, "", "", startDate, endDate);
+                let appointmentData = this.totalAppointments[k];
+                for (let j = 0; j < appointmentData.appointments.length; j++) {
+                  let appointment = appointmentData.appointments[j];
+                  let subject = appointment.cardName + (appointmentData.counter > 1 ? ' (' + (j+1) + '/' + appointmentData.counter + ')' : '');
+                  let startDate = moment(appointment.startDate).format();
+                  let endDate = moment(appointment.endDate).format();
+                  cal.addEvent(subject, "", "", startDate, endDate);
+                }
+
               }
 
               return cal;
             },
             exportAsIcs: function() {
-              var cal = this.processExportAsIcs();
+              let cal = this.processExportAsIcs();
               cal.download("smart-deadlines");
             },
             findListById: function(idOfList) {

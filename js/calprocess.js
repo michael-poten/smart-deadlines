@@ -149,6 +149,7 @@ var calprocess = function() {
             let appointments = [];
 
             let restDurationCard = estimation.estimation;
+            let counter = 0;
             while (
               restDurationCard > 0 &&
               currentEventIndex + 1 <= events.length
@@ -161,6 +162,8 @@ var calprocess = function() {
                 event = events[currentEventIndex];
                 restDurationEvent = event.duration.asMinutes();
               }
+              
+              counter = counter + 1;
 
               if (restDurationEvent === restDurationCard) {
                 startDateTmp = event.endDate
@@ -173,7 +176,8 @@ var calprocess = function() {
                     event.endDate,
                     event.title,
                     card.id,
-                    card.name
+                    card.name,
+                    counter
                   )
                 );
 
@@ -210,7 +214,8 @@ var calprocess = function() {
                     endDateTmp,
                     event.title,
                     card.id,
-                    card.name
+                    card.name,
+                    counter
                   )
                 );
 
@@ -241,7 +246,8 @@ var calprocess = function() {
                       endDateTmp,
                       event.title,
                       card.id,
-                      card.name
+                      card.name,
+                      counter
                     )
                   );
 
@@ -281,10 +287,8 @@ var calprocess = function() {
               await removeDueDate(t, card);
               await t.remove(card.id, "shared", "appointments");
             } else {
-              await t.set(card.id, "shared", "appointments", appointments);
-              for (let k = 0; k < appointments.length; k++) {
-                totalAppointments.push(appointments[k]);
-              }
+              await t.set(card.id, "shared", "appointments", {appointments: appointments, counter: counter});
+              totalAppointments.push({appointments: appointments, counter: counter});
             }
           }
 
