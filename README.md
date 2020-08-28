@@ -15,6 +15,12 @@ You want to contribute? That's great! Please write me your idea or create your v
 - Node / npm
 - Express
 
+### Upload and Download of .ics files with your own server
+
+There is a small NodeJs server for uploading ics files.
+
+You can start the server using the server.js.
+
 ### Start by using Glitch
 
 Glitch can be used to develop the Power-Up on a live-server and so it can be tested right in Trello.
