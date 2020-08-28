@@ -4,7 +4,7 @@ The [Trello](https://trello.com/) Power-Up 'Smart Deadlines' can be used to dist
 
 **Important: The origin iCal-Calendar is only imported and will never be changed.**
 
-![](https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/list_action.png)
+![](https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/lists.PNG)
 
 ## Contribution
 
@@ -14,6 +14,12 @@ You want to contribute? That's great! Please write me your idea or create your v
 
 - Node / npm
 - Express
+
+### Upload and Download of .ics files with your own server
+
+There is a small NodeJs server for uploading ics files.
+
+You can start the server using the server.js.
 
 ### Start by using Glitch
 

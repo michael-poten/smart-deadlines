@@ -324,9 +324,7 @@
               that.readAllDependencies();
             },
             processExportAsIcs: function() {
-              var cal = ics();
-
-              debugger
+              let cal = ics();
               
               for (let k = 0; k < this.totalAppointments.length; k++) {
                 let appointmentData = this.totalAppointments[k];

@@ -162,7 +162,7 @@
                 "shared",
                 "appointments"
               );
-              let appointsmentsData = appointmentsDataCard.appointments;
+
               this.estimationData = await t.get(
                 this.cardId,
                 "shared",
@@ -175,7 +175,8 @@
                 this.estimation = this.estimationData.estimation;
               }
 
-              if (appointmentsData) {
+              if (appointmentsDataCard && appointmentsDataCard.appointments) {
+                let appointmentsData = appointmentsDataCard.appointments;
                 for (let i = 0; i < appointmentsData.length; i++) {
                   let appointment = appointmentsData[i];
                   let startDateTmp = moment(appointment.startDate);
