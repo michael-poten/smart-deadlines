@@ -157,11 +157,12 @@
             initAppointments: async function() {
               let card = await t.card("all");
               this.cardId = card.id;
-              let appointmentsData = await t.get(
+              let appointmentsDataCard = await t.get(
                 this.cardId,
                 "shared",
                 "appointments"
               );
+              let appointsmentsData = appointmentsDataCard.appointments;
               this.estimationData = await t.get(
                 this.cardId,
                 "shared",

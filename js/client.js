@@ -38,7 +38,8 @@ let getBadges = async function(t, isEditMode) {
         badges.push(estimationBadge);
       }
 
-      let appointments = await t.get(id, "shared", "appointments");
+      let appointmentsData = await t.get(id, "shared", "appointments");
+      let appointments = appointmentsData ? appointmentsData.appointments : undefined;
       if (appointments && appointments.length > 1
       ) {
         let appointmentsBadge = {
