@@ -485,6 +485,10 @@
                   that.exportSuccess = true;
                   that.exportCalUrl =
                     that.exportServer + response.data.data.url;
+                })
+                .catch(function(error) {
+                  console.log("error", error);
+                  that.errorText = "Could not upload ics file!";
                 });
               }
 
