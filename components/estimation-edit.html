@@ -13,47 +13,57 @@
               id="estimation"
               name="estimation"
               class="estimation__display"
-                  >
-            {{ estimation | formatDuration }}</span>
+            >
+              {{ estimation | formatDuration }}</span
+            >
             <span
               v-if="estimation === 0"
-              id="estimation"
-              name="estimation"
-              class="estimation__display">
-            0:00 hours</span>
-            <button
-              id="addQuarterHour"
-              class="mod-primary"
-              @click="addQuarterHour"
-              style="margin-left: 12px; display: inline"
+              id="estimation_zero"
+              name="estimation_zero"
+              class="estimation__display"
             >
-              + 15 min
-            </button>
-            <button
-              id="addHour"
-              class="mod-primary"
-              @click="addHour"
-              style="display: inline"
+              0:00 hours</span
             >
-              + 1 hour
-            </button>
-            <button
-              id="addMoreHours"
-              class="mod-primary"
-              @click="addMoreHours"
-              style="display: inline"
-            >
-              + 5 hours
-            </button>
-            <button
-              id="resetEstimation"
-              @click="resetEstimation"
-              style="display: inline"
-            >
-              Reset
-            </button>
+            <span style="margin-left: 12px;">
+              <button
+                id="addQuarterHour"
+                class="mod-primary"
+                @click="addQuarterHour"
+              >
+                + 15 min
+              </button>
+            </span>
+
+            <span>
+              <button id="addHour" class="mod-primary" @click="addHour">
+                + 1 hour
+              </button>
+            </span>
+
+            <span>
+              <button
+                id="addMoreHours"
+                class="mod-primary"
+                @click="addMoreHours"
+              >
+                + 5 hours
+              </button>
+            </span>
+
+            <span>
+              <button
+                id="resetEstimation"
+                @click="resetEstimation"
+                style="display: inline"
+              >
+                Reset
+              </button>
+            </span>
           </span>
-          <h3 style="margin-top: 10px;" v-if="appointments && appointments.length > 0">
+          <h3
+            style="margin-top: 10px;"
+            v-if="appointments && appointments.length > 0"
+          >
             Appointments
           </h3>
           <div style="margin-top: 8px;">
@@ -85,17 +95,28 @@
             this.initAppointments();
           },
           filters: {
-            formatDuration: function (value) {
+            formatDuration: function(value) {
               if (value) {
                 var durationInMinutes = moment.duration(value, "minutes");
-                return parseInt(durationInMinutes.asHours()) + ':' + moment.utc(durationInMinutes.as('milliseconds')).format("mm") + ' hours';
+                return (
+                  parseInt(durationInMinutes.asHours()) +
+                  ":" +
+                  moment
+                    .utc(durationInMinutes.as("milliseconds"))
+                    .format("mm") +
+                  " hours"
+                );
               }
             }
           },
           methods: {
             formatOfDuration: function(value) {
-                var durationInMinutes = moment.duration(value, "minutes");
-                return parseInt(durationInMinutes.asHours()) + ':' + moment.utc(durationInMinutes.as('milliseconds')).format("mm");
+              var durationInMinutes = moment.duration(value, "minutes");
+              return (
+                parseInt(durationInMinutes.asHours()) +
+                ":" +
+                moment.utc(durationInMinutes.as("milliseconds")).format("mm")
+              );
             },
             addQuarterHour: function() {
               this.estimation = this.estimation + 15;
@@ -168,7 +189,7 @@
                   });
                 }
               }
-              
+
               setTimeout(function() {
                 t.sizeTo("#content");
               }, 400);
@@ -179,14 +200,14 @@
     </div>
     <style>
       .estimation__display {
-        text-align: center; 
-        margin-left: 3px; 
-        min-width: 110px; 
-        display: inline-block; 
-        font-weight: 700; 
-        font-size: 1.1em; 
-        background-color: #e5e5e5; 
-        border-radius: 3px; 
+        text-align: center;
+        margin-left: 3px;
+        min-width: 110px;
+        display: inline-block;
+        font-weight: 700;
+        font-size: 1.1em;
+        background-color: #e5e5e5;
+        border-radius: 3px;
         padding: 7px;
       }
       .chip {
