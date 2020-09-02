@@ -77,10 +77,31 @@ TrelloPowerUp.initialize(
         }
       };
     },
+    "board-buttons": function (t, opts) {
+      return [{
+        // or we can also have a button that is just a simple url
+        // clicking it will open a new tab at the provided url
+        icon: {
+          dark: GRAY_ICON,
+          light: GRAY_ICON
+        },
+        text: 'Smart Deadlines',
+        condition: 'always',
+        callback: function(t1) {
+                return t.modal({
+                  url: "../components/appointments.html",
+                  accentColor: "#CDD3D8",
+                  height: 450,
+                  fullscreen: false,
+                  title: "Appointments",
+                  actions: []
+                });
+              }
+      }];
+    },
     "list-actions": function(t) {
       return t.list("name", "id").then(async function(list) {
         let isActive = await t.get("board", "private", list.id + "isActive");
-        console.log("isActive", isActive);
         if (isActive) {
           return [
             {

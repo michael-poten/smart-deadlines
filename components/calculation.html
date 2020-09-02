@@ -105,6 +105,13 @@
                   Export as .ics file
                 </button>
               </span>
+              <span v-if="calculationStatus >= 1">
+                <button id="exportAsCsv" 
+                        @click="exportAsCsv"
+                        :disabled="calculationStatus <= 1">
+                  Export as .csv file
+                </button>
+              </span>
 
               <span v-if="calculationStatus === 0">
                 <button id="execute" class="mod-primary" @click="execute">
@@ -323,26 +330,33 @@
 
               that.readAllDependencies();
             },
-            processExportAsIcs: function() {
-              let cal = ics();
-              
+            exportDataAsIcs: function() {
+              let appointments = [];
               for (let k = 0; k < this.totalAppointments.length; k++) {
                 let appointmentData = this.totalAppointments[k];
                 for (let j = 0; j < appointmentData.appointments.length; j++) {
-                  let appointment = appointmentData.appointments[j];
-                  let subject = appointment.cardName + (appointmentData.counter > 1 ? ' (' + (j+1) + '/' + appointmentData.counter + ')' : '');
-                  let startDate = moment(appointment.startDate).format();
-                  let endDate = moment(appointment.endDate).format();
-                  cal.addEvent(subject, "", "", startDate, endDate);
+                  appointments.push(appointmentData.appointments[j]);
                 }
-
               }
-
-              return cal;
+              
+              return calprocess().exportIcs(appointments);
             },
             exportAsIcs: function() {
-              let cal = this.processExportAsIcs();
+              let cal = this.exportDataAsIcs();
               cal.download("smart-deadlines");
+            },
+            exportAsCsv: function() {
+              
+              let appointments = [];
+              for (let k = 0; k < this.totalAppointments.length; k++) {
+                let appointmentData = this.totalAppointments[k];
+                for (let j = 0; j < appointmentData.appointments.length; j++) {
+                  appointments.push(appointmentData.appointments[j]);
+                }
+              }
+              
+              let lines = calprocess().exportCsv(appointments);
+              calprocess().downloadCsvData(lines);
             },
             findListById: function(idOfList) {
               let list = this.lists.find(element => element.id === idOfList);
@@ -454,7 +468,7 @@
               if (this.exportEnabled && !this.errorText) {
                 let bodyFormData = new FormData();
 
-                let cal = this.processExportAsIcs();
+                let cal = this.exportDataAsIcs();
 
                 var blob;
                 if (navigator.userAgent.indexOf("MSIE 10") === -1) {
