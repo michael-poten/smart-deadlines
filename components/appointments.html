@@ -74,7 +74,7 @@
                 <th>Time</th>
                 <th>Duration</th>
               </tr>
-              <tr v-for="appointment in totalAppointments" v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()) }">
+              <tr v-for="appointment in totalAppointments" v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()), appointment__completed: appointment.dueComplete }">
                 <td>{{ appointment.cardName }} {{ selectedList && appointment.dependencyListName && appointment.dependencyListName !== selectedList.name ? "(" + appointment.dependencyListName + ")" : "" }}</td>
                 <td>{{ appointment.startDate | formatDate }}</td>
                 <td>
@@ -229,6 +229,7 @@
                       
                       appointment.duration = moment.duration(appointment.endDate.diff(appointment.startDate));
                       appointment.dependencyListName = list.isDependency ? list.name : null
+                      appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
                       
                       this.totalDuration = this.totalDuration.add(appointment.duration);
@@ -368,6 +369,10 @@
       
       .appointment__expired {
         background-color: #f9e3db;
+      }
+
+      .appointment__completed {
+        background-color: #dcffd9;
       }
 
       /* Style the tab content */
