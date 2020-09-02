@@ -40,10 +40,7 @@ Card C: 15:30 o'clock
 
 ## Configuration
 
-First, you need to add the link to your iCal calendar. Optionally, you can define a text to be included in the calendar title.
-![](https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/settings.PNG)
-
-After you have done this you should give an estimate for each card.
+First, you need to add the link to your iCal calendar. Optionally, you can define a text to be included in the calendar title. After you have done this you should give an estimate for each card.
 ![](https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/card_estimation.PNG)
 
 Finally, click on "Calculate Smart Deadlines..." in the context menu of a desired list. In the window that now appears, you can make settings and then click on "Run" to start the calculation of the deadlines.
