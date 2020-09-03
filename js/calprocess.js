@@ -86,10 +86,21 @@ var calprocess = function() {
       let lines = "Card name; Appointment name; Date; Start time; End time \n";
       for (let j = 0; j < totalAppointments.length; j++) {
         let appointment = totalAppointments[j];
-        let startDate = moment(appointment.startDate).format("YYYY[-]MM[-]DD")
+        let startDate = moment(appointment.startDate).format("YYYY[-]MM[-]DD");
         let startDateTime = moment(appointment.startDate).format("H:mm");
         let endDateTime = moment(appointment.endDate).format("H:mm");
-        lines = lines + appointment.cardName + "; " + appointment.subject + "; " + startDate + "; " + startDateTime + "; " + endDateTime + "\n";
+        lines =
+          lines +
+          appointment.cardName +
+          "; " +
+          appointment.subject +
+          "; " +
+          startDate +
+          "; " +
+          startDateTime +
+          "; " +
+          endDateTime +
+          "\n";
       }
 
       return lines;
@@ -107,20 +118,64 @@ var calprocess = function() {
       return cal;
     },
     downloadCsvData: function(csvLines) {
+      var blob;
+      if (navigator.userAgent.indexOf("MSIE 10") === -1) {
+        // chrome or firefox
+        blob = new Blob([csvLines], { type: "text/comma-separated-values" });
+      } else {
+        // ie
+        var bb = new BlobBuilder();
+        bb.append(csvLines);
+        blob = bb.getBlob(
+          "text/comma-separated-values;charset=" + document.characterSet
+        );
+      }
+
+      saveAs(blob, "smart-deadlines.csv");
+    },
+    uploadIcsData: function(t, cal, exportServer, exportServerKey, exportServerName) {
+      return new Promise(async function(resolve, reject) {
+        let bodyFormData = new FormData();
+
         var blob;
         if (navigator.userAgent.indexOf("MSIE 10") === -1) {
           // chrome or firefox
-          blob = new Blob([csvLines], { type: "text/comma-separated-values" });
+          blob = new Blob([cal.calendar()], { type: "text/calendar" });
         } else {
           // ie
           var bb = new BlobBuilder();
-          bb.append(csvLines);
-          blob = bb.getBlob(
-            "text/comma-separated-values;charset=" + document.characterSet
-          );
+          bb.append(cal.calendar());
+          blob = bb.getBlob("text/x-vCalendar;charset=" + document.characterSet);
         }
 
-        saveAs(blob, "smart-deadlines.csv");
+        bodyFormData.append("ics", blob, exportServerName + ".ics");
+
+        let that = this;
+        axios({
+          method: "post",
+          url: exportServer + "/ics-upload",
+          data: bodyFormData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+            token: exportServerKey,
+            filename: exportServerName + ".ics"
+          }
+        })
+          .then(async function(response) {
+            await t.set(
+              "board",
+              "private",
+              "exportServerName",
+              exportServerName
+            );
+          
+            resolve(exportServer + response.data.data.url);
+          })
+          .catch(function(error) {
+            console.log("error", error);
+            reject("Could not upload ics file!");
+          });
+      });
     },
     startDateCalculation: async function(t, listId, startDate, icsData) {
       return new Promise(async function(resolve, reject) {
