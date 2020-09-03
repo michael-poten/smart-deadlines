@@ -10,6 +10,18 @@
           <div style="float: left; vertical-align: middle; margin-top: 12px;">
             <span>
               <input
+                      type="checkbox"
+                      id="showExpired"
+                      name="showExpired"
+                      style="margin-left: 15px"
+                      v-model="showExpired"
+              />
+              <span for="showExpired">
+                Expired / completed appointments
+              </span>
+            </span>
+            <span style="margin-left: 10px;">
+              <input
                 type="checkbox"
                 id="showDependencies"
                 name="showDependencies"
@@ -19,18 +31,6 @@
               />
               <span for="showDependencies" v-if="!selectedResultAppointments && selectedList">
                 With dependencies
-              </span>
-            </span>
-            <span style="margin-left: 10px;">
-              <input
-                type="checkbox"
-                id="showExpired"
-                name="showExpired"
-                style="margin-left: 15px"
-                v-model="showExpired"
-              />
-              <span for="showExpired">
-                Expired / completed appointments
               </span>
             </span>
           </div>
