@@ -15,7 +15,7 @@
                 name="showDependencies"
                 style="margin-left: 15px"
                 v-model="showDependencies"
-                v-if="!selectedResultAppointments"
+                v-if="!selectedResultAppointments && selectedList"
               />
               <span for="showDependencies" v-if="!selectedResultAppointments">
                 With dependencies
