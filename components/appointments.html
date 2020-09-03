@@ -15,8 +15,9 @@
                 name="showDependencies"
                 style="margin-left: 15px"
                 v-model="showDependencies"
+                v-if="!selectedResultAppointments"
               />
-              <span for="showDependencies">
+              <span for="showDependencies" v-if="!selectedResultAppointments">
                 With dependencies
               </span>
             </span>
@@ -35,38 +36,88 @@
           </div>
           <div style="float: right">
             <span>
-              <button id="exportAsIcs" @click="exportAsIcs" class="mod-primary" >
-                Export as ICS
+              <button
+                id="showExport"
+                @click="exportEnabled = !exportEnabled"
+                class="mod-primary"
+                v-if="exportServer"
+              >
+                Upload
               </button>
             </span>
             <span>
-              <button id="exportAsCsv" @click="exportAsCsv" class="mod-primary" >
-                Export as CSV
+              <button id="exportAsIcs" @click="exportAsIcs" class="mod-primary">
+                ICS
+              </button>
+            </span>
+            <span>
+              <button id="exportAsCsv" @click="exportAsCsv" class="mod-primary">
+                CSV
               </button>
             </span>
           </div>
         </div>
-        
+
+        <div style="width: 100%;" v-if="exportEnabled">
+          <div style="padding-top: 0px; padding-left:10px;">
+            <hr style="margin-top: 0px; margin-bottom: 5px" />
+            <span style="width: 210px; display: inline-block">
+              <input
+                type="text"
+                placeholder="Key"
+                id="exportServerName"
+                name="exportServerName"
+                v-model="exportServerName"
+              />
+            </span>
+
+            <span style="width: 405px; display: inline-block">
+              <input
+                type="text"
+                id="exportCalUrl"
+                name="exportCalUrl"
+                placeholder="Generated iCal-URL"
+                :readonly="true"
+                v-model="exportCalUrl"
+              />
+            </span>
+            <span>
+              <button id="uploadIcs" @click="uploadIcs">
+                Upload
+              </button>
+            </span>
+          </div>
+        </div>
+
         <div>
           <div class="tab">
             <button
               class="tablinks"
-              v-bind:class="{ active: !selectedList }"
+              v-bind:class="{ active: !selectedList && !selectedResultAppointments }"
               @click="selectList(null)"
             >
               All
             </button>
             <button
               class="tablinks"
-              v-bind:class="{ active: selectedList && selectedList.id === list.id }"
+              v-bind:class="{ active: !selectedResultAppointments && selectedList && selectedList.id === list.id }"
               v-for="list in lists"
               @click="selectList(list)"
             >
               {{ list.name }}
             </button>
+            <button
+              class="tablinks"
+              v-bind:class="{ active: selectedResultAppointments }"
+              @click="selectResultAppointments"
+              v-if="this.resultAppointments"
+            >
+              Result of calculation
+            </button>
           </div>
-
-          <div style="text-align:center; padding: 10px; height: 63%; overflow: auto;">
+          <div
+            style="text-align:center; padding: 10px; height: 63%; overflow: auto;"
+          >
             <table>
               <tr>
                 <th>Name</th>
@@ -75,7 +126,12 @@
                 <th>Duration</th>
               </tr>
               <tr v-for="appointment in totalAppointments" v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()), appointment__completed: appointment.dueComplete }">
-                <td>{{ appointment.cardName }} {{ selectedList && appointment.dependencyListName && appointment.dependencyListName !== selectedList.name ? "(" + appointment.dependencyListName + ")" : "" }}</td>
+                <td>
+                  {{ appointment.cardName }} {{ appointment.dependencyListName
+                  && ((selectedList && appointment.dependencyListName !==
+                  selectedList.name) || resultAppointments) ? "(" +
+                  appointment.dependencyListName + ")" : "" }}
+                </td>
                 <td>{{ appointment.startDate | formatDate }}</td>
                 <td>
                   {{ appointment.startDate | formatTime }} - {{
@@ -88,19 +144,22 @@
             </table>
           </div>
         </div>
-        <div class="appointments__summary" style="width: 100%; text-align: right; background-color: #d5d5d5">
-          <hr style="margin-top: 0px; margin-bottom: 0px; "/>
+        <div
+          class="appointments__summary"
+          style="width: 100%; text-align: right; background-color: #d5d5d5"
+          v-if="!exportEnabled"
+        >
+          <hr style="margin-top: 0px; margin-bottom: 0px; " />
           <div style="padding-right: 10px; font-size: 1.2em; padding-top: 8px;">
-             Total time: <b>{{ totalDuration | formatDuration }}</b>
+            Total time: <b>{{ totalDuration | formatDuration }}</b>
           </div>
-
         </div>
-        
       </div>
 
       <script src="https://p.trellocdn.com/power-up.min.js"></script>
       <script src="../js/libs/vue.js"></script>
       <script src="../js/libs/moment.js"></script>
+      <script src="../js/libs/axios.min.js"></script>
       <script src="../js/calprocess.js"></script>
       <script src="../js/libs/ics.js"></script>
       <script src="../js/libs/FileSaver.min.js"></script>
@@ -113,21 +172,41 @@
           el: "#report-area",
           data: {
             selectedList: null,
+            selectedResultAppointments: false,
             totalAppointments: [],
+            resultAppointments: [],
             lists: [],
+            exportEnabled: false,
+            exportServer: null,
+            exportServerKey: null,
+            exportServerName: "",
+            exportSuccess: false,
+            exportCalUrl: "",
             showDependencies: true,
             showExpired: false,
             totalDuration: moment.duration(0)
           },
           watch: {
-            showDependencies: function () {
-              this.loadAppointments();
+            showDependencies: function() {
+              if (this.selectedResultAppointments) {
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
             },
-            showExpired: function () {
-              this.loadAppointments();
+            showExpired: function() {
+              if (this.selectedResultAppointments) {
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
             }
           },
           mounted() {
+            this.resultAppointments = t.arg("resultAppointments");
+            if (this.resultAppointments && this.resultAppointments.length > 0) {
+              this.selectedResultAppointments = true;
+            }
             this.initLoad();
           },
           filters: {
@@ -136,9 +215,7 @@
                 return (
                   parseInt(value.asHours()) +
                   ":" +
-                  moment
-                    .utc(value.as("milliseconds"))
-                    .format("mm") +
+                  moment.utc(value.as("milliseconds")).format("mm") +
                   " hours"
                 );
               }
@@ -155,21 +232,104 @@
             }
           },
           methods: {
-            exportAsIcs: function() {              
+            selectResultAppointments: function() {
+              this.selectedResultAppointments = true;
+              this.totalAppointments = [];
+              this.totalDuration = moment.duration(0);
+
+              for (let j = 0; j < this.resultAppointments.length; j++) {
+                let appointment = this.resultAppointments[j];
+
+                let startDateTmp = moment(appointment.startDate);
+                let endDateTmp = moment(appointment.endDate);
+                appointment.startDate = startDateTmp;
+                appointment.endDate = endDateTmp;
+
+                if (!this.showExpired) {
+                  if (appointment.startDate.isBefore(moment())) {
+                    continue;
+                  }
+                }
+
+                appointment.duration = moment.duration(
+                  appointment.endDate.diff(appointment.startDate)
+                );
+                this.totalAppointments.push(appointment);
+
+                this.totalDuration = this.totalDuration.add(
+                  appointment.duration
+                );
+              }
+            },
+            uploadIcs: function() {
+              let that = this;
+              let cal = calprocess().exportIcs(this.totalAppointments);
+
+              calprocess()
+                .uploadIcsData(
+                  t,
+                  cal,
+                  this.exportServer,
+                  this.exportServerKey,
+                  this.exportServerName
+                )
+                .then(function(response) {
+                  that.exportSuccess = true;
+                  that.exportCalUrl = response;
+                })
+                .catch(function(error) {
+                  that.errorText = error;
+                });
+            },
+            exportAsIcs: function() {
               let cal = calprocess().exportIcs(this.totalAppointments);
               cal.download("smart-deadlines");
             },
-            exportAsCsv: function() {              
+            exportAsCsv: function() {
               let lines = calprocess().exportCsv(this.totalAppointments);
 
               calprocess().downloadCsvData(lines);
             },
             initLoad: async function() {
-              this.lists = await t.lists("all");
-              this.loadAppointments();
+              let allLists = await t.lists("all");
+              for (let k = 0; k < allLists.length; k++) {
+                let listIsActive = await t.get(
+                  "board",
+                  "private",
+                  allLists[k].id + "isActive"
+                );
+                if (listIsActive) {
+                  this.lists.push(allLists[k]);
+                }
+              }
+
+              this.exportServer = await t.get(
+                "board",
+                "private",
+                "exportServer"
+              );
+
+              this.exportServerKey = await t.get(
+                "board",
+                "private",
+                "exportServerKey"
+              );
+              this.exportServerName = await t.get(
+                "board",
+                "private",
+                "exportServerName"
+              );
+
+              if (this.selectedResultAppointments) {
+                this.showExpired = true;
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
             },
             selectList: function(list) {
               this.selectedList = list;
+              this.selectedResultAppointments = false;
               this.loadAppointments();
             },
             loadAppointments: async function() {
@@ -182,16 +342,18 @@
                 }
               } else {
                 if (this.showDependencies) {
-                   let dependencyList = await this.readAllDependencies(this.selectedList, this.lists);
-                   for (let k = 0; k < dependencyList.length; k++) {
-                      listsToLoad.push(dependencyList[k]);
+                  let dependencyList = await this.readAllDependencies(
+                    this.selectedList,
+                    this.lists
+                  );
+                  for (let k = 0; k < dependencyList.length; k++) {
+                    listsToLoad.push(dependencyList[k]);
                   }
                 }
 
                 listsToLoad.push(this.selectedList);
-
               }
-              
+
               this.totalDuration = moment.duration(0);
 
               for (let k = 0; k < listsToLoad.length; k++) {
@@ -215,35 +377,37 @@
 
                     for (let j = 0; j < appointments.length; j++) {
                       let appointment = appointments[j];
-                      
+
                       let startDateTmp = moment(appointment.startDate);
                       let endDateTmp = moment(appointment.endDate);
                       appointment.startDate = startDateTmp;
                       appointment.endDate = endDateTmp;
-                      
+
                       if (!this.showExpired) {
-                        if(appointment.startDate.isBefore(moment()) || card.dueComplete) {
+                        if (
+                          appointment.startDate.isBefore(moment()) ||
+                          card.dueComplete
+                        ) {
                           continue;
                         }
                       }
                       
                       appointment.duration = moment.duration(appointment.endDate.diff(appointment.startDate));
-                      appointment.dependencyListName = list.isDependency ? list.name : null
+                      appointment.dependencyListName = list.isDependency ? list.name : null;
                       appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
-                      
-                      this.totalDuration = this.totalDuration.add(appointment.duration);
+
+                      this.totalDuration = this.totalDuration.add(
+                        appointment.duration
+                      );
                     }
                   }
                 }
-
               }
 
               this.totalAppointments = this.totalAppointments.sort((a, b) => {
                 return moment(a.startDate).diff(b.startDate);
               });
-              
-
             },
             readAllDependencies: async function(startList, lists) {
               return new Promise(async function(resolve, reject) {
@@ -266,7 +430,9 @@
                     currentList.id + "isActive"
                   );
                   if (dependencyListId && listIsActive) {
-                    currentList = lists.find(element => element.id === dependencyListId);
+                    currentList = lists.find(
+                      element => element.id === dependencyListId
+                    );
                     if (currentList) {
                       currentList.isDependency = true;
                       dependencyList.push(currentList);
@@ -283,7 +449,7 @@
 
                 resolve(dependencyList);
               });
-            },
+            }
           }
         });
       </script>
@@ -350,7 +516,7 @@
         border-bottom-left-radius: 0px !important;
         border-bottom-right-radius: 0px !important;
       }
-      
+
       .appointments__summary {
         position: absolute;
         top: 91%;
@@ -366,13 +532,27 @@
       .tab button.active {
         background-color: #d2e5f7;
       }
-      
+
       .appointment__expired {
         background-color: #f9e3db;
       }
 
       .appointment__completed {
         background-color: #dcffd9;
+      }
+
+      .generic__label {
+        float: left;
+        margin-right: 5px;
+      }
+
+      .generic__label__content {
+        display: block;
+        overflow: hidden;
+      }
+
+      .generic__width100 {
+        width: 100%;
       }
 
       /* Style the tab content */
