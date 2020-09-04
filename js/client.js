@@ -40,11 +40,10 @@ let getBadges = async function(t, isEditMode) {
 
       let appointmentsData = await t.get(id, "shared", "appointments");
       let appointments = appointmentsData ? appointmentsData.appointments : undefined;
-      if (appointments && appointments.length > 1
-      ) {
+      if (appointments) {
         let appointmentsBadge = {
-          title: "Appointments",
-          text: appointments.length + " Appointments",
+          title: "Appointment(s)",
+          text: appointments.length + " Appointment(s)",
           icon: COUNTER_GRAY_ICON,
         };
         badges.push(appointmentsBadge);
@@ -91,7 +90,7 @@ TrelloPowerUp.initialize(
                 return t.modal({
                   url: "../components/appointments.html",
                   accentColor: "#CDD3D8",
-                  height: 450,
+                  height: 600,
                   fullscreen: false,
                   title: "Appointments",
                   actions: []

@@ -11,19 +11,6 @@
             <span>
               <input
                 type="checkbox"
-                id="showDependencies"
-                name="showDependencies"
-                style="margin-left: 15px"
-                v-model="showDependencies"
-                v-if="!selectedResultAppointments"
-              />
-              <span for="showDependencies" v-if="!selectedResultAppointments">
-                With dependencies
-              </span>
-            </span>
-            <span style="margin-left: 10px;">
-              <input
-                type="checkbox"
                 id="showExpired"
                 name="showExpired"
                 style="margin-left: 15px"
@@ -31,6 +18,22 @@
               />
               <span for="showExpired">
                 Expired / completed appointments
+              </span>
+            </span>
+            <span style="margin-left: 10px;">
+              <input
+                type="checkbox"
+                id="showDependencies"
+                name="showDependencies"
+                style="margin-left: 15px"
+                v-model="showDependencies"
+                v-if="!selectedResultAppointments && selectedList"
+              />
+              <span
+                for="showDependencies"
+                v-if="!selectedResultAppointments && selectedList"
+              >
+                With dependencies
               </span>
             </span>
           </div>
@@ -115,44 +118,41 @@
               Result of calculation
             </button>
           </div>
-          <div
-            style="text-align:center; padding: 10px; height: 63%; overflow: auto;"
-          >
-            <table>
-              <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Duration</th>
-              </tr>
-              <tr
-                v-for="appointment in totalAppointments"
-                v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()) }"
-              >
-                <td>
-                  {{ appointment.cardName }} {{ appointment.dependencyListName
-                  && ((selectedList && appointment.dependencyListName !==
-                  selectedList.name) || resultAppointments) ? "(" +
-                  appointment.dependencyListName + ")" : "" }}
-                </td>
-                <td>{{ appointment.startDate | formatDate }}</td>
-                <td>
-                  {{ appointment.startDate | formatTime }} - {{
-                  appointment.endDate | formatTime}}
-                </td>
-                <td>
-                  {{ appointment.duration | formatDuration }}
-                </td>
-              </tr>
-            </table>
+          <div style="padding: 10px; height: 70%; overflow: auto;">
+            <div
+              class="chip"
+              v-for="appointment in totalAppointments"
+              v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()), appointment__completed: appointment.dueComplete }"
+            >
+              <div class="chip-content">
+                <span style="width: 70%">
+                  <div style="font-size: 1.3em">
+                    {{ appointment.cardName }} {{ appointment.dependencyListName
+                    && ((selectedList && appointment.dependencyListName !==
+                    selectedList.name) || resultAppointments) ? "(" +
+                    appointment.dependencyListName + ")" : "" }}
+                  </div>
+                </span>
+                <span style="width: 30%; text-align: right">
+                  <div style="font-size: 1.1em">
+                    {{ appointment.startDate | formatDate }}
+                  </div>
+                  <div style="font-size: 0.9em">
+                    <i
+                      >{{ appointment.startDate | formatTime }} - {{
+                      appointment.endDate | formatTime}}</i
+                    >
+                  </div>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
         <div
           class="appointments__summary"
-          style="width: 100%; text-align: right; background-color: #d5d5d5"
+          style="width: 100%; text-align: right; background-color: rgb(205, 205, 205)"
           v-if="!exportEnabled"
         >
-          <hr style="margin-top: 0px; margin-bottom: 0px; " />
           <div style="padding-right: 10px; font-size: 1.2em; padding-top: 8px;">
             Total time: <b>{{ totalDuration | formatDuration }}</b>
           </div>
@@ -225,7 +225,7 @@
             },
             formatDate: function(value) {
               if (value) {
-                return value.format("D[.] MMM");
+                return value.format("D[.] MMMM");
               }
             },
             formatTime: function(value) {
@@ -401,6 +401,7 @@
                       appointment.dependencyListName = list.isDependency
                         ? list.name
                         : null;
+                      appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
 
                       this.totalDuration = this.totalDuration.add(
@@ -461,35 +462,24 @@
       </script>
     </div>
     <style>
-      .estimation__display {
-        text-align: center;
-        margin-left: 3px;
-        min-width: 110px;
-        display: inline-block;
-        font-weight: 700;
-        font-size: 1.1em;
-        background-color: #e5e5e5;
-        border-radius: 3px;
-        padding: 7px;
-      }
       .chip {
         display: inline-flex;
         flex-direction: row;
-        background-color: #e5e5e5;
+        background-color: #ededed;
         border: none;
         cursor: default;
-        height: 36px;
+        width: 100%;
         outline: none;
-        padding: 0;
+        padding-top: 5px;
+        padding-bottom: 5px;
         font-size: 14px;
         font-color: #333333;
-        font-family: "Open Sans", sans-serif;
         white-space: nowrap;
         align-items: center;
         border-radius: 16px;
         vertical-align: middle;
         text-decoration: none;
-        justify-content: center;
+        margin-top: 5px;
       }
       .chip-content {
         cursor: inherit;
@@ -499,6 +489,7 @@
         white-space: nowrap;
         padding-left: 12px;
         padding-right: 12px;
+        width: 100%;
       }
 
       .tab {
@@ -525,7 +516,7 @@
 
       .appointments__summary {
         position: absolute;
-        top: 91%;
+        top: 92%;
         height: 40px;
       }
 
@@ -541,6 +532,10 @@
 
       .appointment__expired {
         background-color: #f9e3db;
+      }
+
+      .appointment__completed {
+        background-color: #dcffd9;
       }
 
       .generic__label {
