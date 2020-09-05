@@ -237,7 +237,7 @@
             selectResultAppointments: function() {
               this.selectedResultAppointments = true;
               this.totalAppointments = [];
-              this.totalDuration = moment.duration(0);
+              let totalDurationTmp = moment.duration(0);
 
               for (let j = 0; j < this.resultAppointments.length; j++) {
                 let appointment = this.resultAppointments[j];
@@ -258,10 +258,12 @@
                 );
                 this.totalAppointments.push(appointment);
 
-                this.totalDuration = this.totalDuration.add(
+                totalDurationTmp = totalDurationTmp.add(
                   appointment.duration
                 );
               }
+
+              this.totalDuration = totalDurationTmp;
 
               this.distributeAppointments();
             },
@@ -385,6 +387,7 @@
                 listsToLoad.push(this.selectedList);
               }
 
+              let totalDurationTmp = moment.duration(0);
               this.totalDuration = moment.duration(0);
 
               for (let k = 0; k < listsToLoad.length; k++) {
@@ -429,13 +432,15 @@
                       appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
 
-                      this.totalDuration = this.totalDuration.add(
+                      totalDurationTmp = totalDurationTmp.add(
                         appointment.duration
                       );
                     }
                   }
                 }
               }
+
+              this.totalDuration = totalDurationTmp;
 
               this.totalAppointments = this.totalAppointments.sort((a, b) => {
                 return moment(a.startDate).diff(b.startDate);
