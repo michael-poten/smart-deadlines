@@ -1,0 +1,596 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <div id="content">
+      <div id="report-area">
+        <div style="height: 48px">
+          <div style="float: left; vertical-align: middle; margin-top: 12px;">
+            <span>
+              <input
+                type="checkbox"
+                id="showExpired"
+                name="showExpired"
+                style="margin-left: 15px"
+                v-model="showExpired"
+              />
+              <span for="showExpired">
+                Expired / completed appointments
+              </span>
+            </span>
+            <span style="margin-left: 10px;">
+              <input
+                type="checkbox"
+                id="showDependencies"
+                name="showDependencies"
+                style="margin-left: 15px"
+                v-model="showDependencies"
+                v-if="!selectedResultAppointments && selectedList"
+              />
+              <span
+                for="showDependencies"
+                v-if="!selectedResultAppointments && selectedList"
+              >
+                With dependencies
+              </span>
+            </span>
+          </div>
+          <div style="float: right">
+            <span>
+              <button
+                id="showExport"
+                @click="exportEnabled = !exportEnabled"
+                class="mod-primary"
+                v-if="exportServer"
+              >
+                Upload
+              </button>
+            </span>
+            <span>
+              <button id="exportAsIcs" @click="exportAsIcs" class="mod-primary">
+                ICS
+              </button>
+            </span>
+            <span>
+              <button id="exportAsCsv" @click="exportAsCsv" class="mod-primary">
+                CSV
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <div style="width: 100%;" v-if="exportEnabled">
+          <div style="padding-top: 0px; padding-left:10px;">
+            <hr style="margin-top: 0px; margin-bottom: 5px" />
+            <span style="width: 210px; display: inline-block">
+              <input
+                type="text"
+                placeholder="Key"
+                id="exportServerName"
+                name="exportServerName"
+                v-model="exportServerName"
+              />
+            </span>
+
+            <span style="width: 405px; display: inline-block">
+              <input
+                type="text"
+                id="exportCalUrl"
+                name="exportCalUrl"
+                placeholder="Generated iCal-URL"
+                :readonly="true"
+                v-model="exportCalUrl"
+              />
+            </span>
+            <span>
+              <button id="uploadIcs" @click="uploadIcs">
+                Upload
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <div class="tab">
+            <button
+              class="tablinks"
+              v-bind:class="{ active: !selectedList && !selectedResultAppointments }"
+              @click="selectList(null)"
+            >
+              All
+            </button>
+            <button
+              class="tablinks"
+              v-bind:class="{ active: !selectedResultAppointments && selectedList && selectedList.id === list.id }"
+              v-for="list in lists"
+              @click="selectList(list)"
+            >
+              {{ list.name }}
+            </button>
+            <button
+              class="tablinks"
+              v-bind:class="{ active: selectedResultAppointments }"
+              @click="selectResultAppointments"
+              v-if="this.resultAppointments"
+            >
+              Result of calculation
+            </button>
+          </div>
+          <div style="padding: 10px; height: 70%; overflow: auto;">
+            <div v-for="dayAppointment in dayAppointments" style="margin-top: 10px" >
+              <span style="width: 10%; display: inline-block; vertical-align: top; margin-top: 7px; font-size: 1.4em">
+                {{ dayAppointment.day | formatDate }}
+              </span>
+              <span style="width: 89%; display: inline-block">
+                <div
+                  class="chip"
+                  v-for="appointment in dayAppointment.appointments"
+                  v-bind:class="{ appointment__expired: appointment.startDate.isBefore(moment()), appointment__completed: appointment.dueComplete }"
+                >
+                  <div class="chip-content">
+                    <div style="font-size: 1.2em; font-weight: 400">
+                      {{ appointment.cardName }} {{
+                      appointment.dependencyListName && ((selectedList &&
+                      appointment.dependencyListName !== selectedList.name) ||
+                      resultAppointments) ? "(" +
+                        appointment.dependencyListName + ")" : "" }}
+                    </div>
+                    <div style="font-size: 1.1em">
+                      <i
+                        >{{ appointment.startDate | formatTime }} - {{
+                        appointment.endDate | formatTime}}</i
+                      >
+                    </div>
+                  </div>
+                </div>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="appointments__summary"
+          style="width: 100%; text-align: right; background-color: rgb(205, 205, 205)"
+          v-if="!exportEnabled"
+        >
+          <div style="padding-right: 10px; font-size: 1.2em; padding-top: 8px;">
+            Total time: <b>{{ totalDuration | formatDuration }}</b>
+          </div>
+        </div>
+      </div>
+
+      <script src="https://p.trellocdn.com/power-up.min.js"></script>
+      <script src="../js/libs/vue.js"></script>
+      <script src="../js/libs/moment.js"></script>
+      <script src="../js/libs/axios.min.js"></script>
+      <script src="../js/calprocess.js"></script>
+      <script src="../js/libs/ics.js"></script>
+      <script src="../js/libs/FileSaver.min.js"></script>
+      <script src="../js/libs/Blob.js"></script>
+
+      <script>
+        var t = window.TrelloPowerUp.iframe();
+
+        new Vue({
+          el: "#report-area",
+          data: {
+            selectedList: null,
+            selectedResultAppointments: false,
+            totalAppointments: [],
+            resultAppointments: [],
+            lists: [],
+            exportEnabled: false,
+            exportServer: null,
+            exportServerKey: null,
+            exportServerName: "",
+            exportSuccess: false,
+            exportCalUrl: "",
+            showDependencies: true,
+            showExpired: false,
+            totalDuration: moment.duration(0),
+            dayAppointments: []
+          },
+          watch: {
+            showDependencies: function() {
+              if (this.selectedResultAppointments) {
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
+            },
+            showExpired: function() {
+              if (this.selectedResultAppointments) {
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
+            }
+          },
+          mounted() {
+            this.resultAppointments = t.arg("resultAppointments");
+            if (this.resultAppointments && this.resultAppointments.length > 0) {
+              this.selectedResultAppointments = true;
+            }
+            this.initLoad();
+          },
+          filters: {
+            formatDuration: function(value) {
+              if (value) {
+                return (
+                  parseInt(value.asHours()) +
+                  ":" +
+                  moment.utc(value.as("milliseconds")).format("mm") +
+                  " hours"
+                );
+              }
+            },
+            formatDate: function(value) {
+              if (value) {
+                return value.format("D[.] MMM");
+              }
+            },
+            formatTime: function(value) {
+              if (value) {
+                return value.format("H:mm");
+              }
+            }
+          },
+          methods: {
+            selectResultAppointments: function() {
+              this.selectedResultAppointments = true;
+              this.totalAppointments = [];
+              this.totalDuration = moment.duration(0);
+
+              for (let j = 0; j < this.resultAppointments.length; j++) {
+                let appointment = this.resultAppointments[j];
+
+                let startDateTmp = moment(appointment.startDate);
+                let endDateTmp = moment(appointment.endDate);
+                appointment.startDate = startDateTmp;
+                appointment.endDate = endDateTmp;
+
+                if (!this.showExpired) {
+                  if (appointment.startDate.isBefore(moment())) {
+                    continue;
+                  }
+                }
+
+                appointment.duration = moment.duration(
+                  appointment.endDate.diff(appointment.startDate)
+                );
+                this.totalAppointments.push(appointment);
+
+                this.totalDuration = this.totalDuration.add(
+                  appointment.duration
+                );
+              }
+              
+              this.distributeAppointments();
+            },
+            uploadIcs: function() {
+              let that = this;
+              let cal = calprocess().exportIcs(this.totalAppointments);
+
+              calprocess()
+                .uploadIcsData(
+                  t,
+                  cal,
+                  this.exportServer,
+                  this.exportServerKey,
+                  this.exportServerName
+                )
+                .then(function(response) {
+                  that.exportSuccess = true;
+                  that.exportCalUrl = response;
+                })
+                .catch(function(error) {
+                  that.errorText = error;
+                });
+            },
+            distributeAppointments: function() {
+              this.dayAppointments = [];
+              let lastDateString;
+              for (let k = 0; k < this.totalAppointments.length; k++) {
+                let appointment = this.totalAppointments[k];
+                let dateString = appointment.startDate.format("D MM YYYY");
+                if (!lastDateString) {
+                  lastDateString = dateString;
+                  this.dayAppointments.push({
+                    appointments: [appointment],
+                    day: appointment.startDate
+                  });
+                } else {
+                  if (dateString === lastDateString) {
+                    this.dayAppointments[
+                      this.dayAppointments.length - 1
+                    ].appointments.push(appointment);
+                  } else {
+                    this.dayAppointments.push({
+                      appointments: [appointment],
+                      day: appointment.startDate
+                    });
+                    lastDateString = dateString;
+                  }
+                }
+              }
+            },
+            exportAsIcs: function() {
+              let cal = calprocess().exportIcs(this.totalAppointments);
+              cal.download("smart-deadlines");
+            },
+            exportAsCsv: function() {
+              let lines = calprocess().exportCsv(this.totalAppointments);
+
+              calprocess().downloadCsvData(lines);
+            },
+            initLoad: async function() {
+              let allLists = await t.lists("all");
+              for (let k = 0; k < allLists.length; k++) {
+                let listIsActive = await t.get(
+                  "board",
+                  "private",
+                  allLists[k].id + "isActive"
+                );
+                if (listIsActive) {
+                  this.lists.push(allLists[k]);
+                }
+              }
+
+              this.exportServer = await t.get(
+                "board",
+                "private",
+                "exportServer"
+              );
+
+              this.exportServerKey = await t.get(
+                "board",
+                "private",
+                "exportServerKey"
+              );
+              this.exportServerName = await t.get(
+                "board",
+                "private",
+                "exportServerName"
+              );
+
+              if (this.selectedResultAppointments) {
+                this.showExpired = true;
+                this.selectResultAppointments();
+              } else {
+                this.loadAppointments();
+              }
+            },
+            selectList: function(list) {
+              this.selectedList = list;
+              this.selectedResultAppointments = false;
+              this.loadAppointments();
+            },
+            loadAppointments: async function() {
+              this.totalAppointments = [];
+
+              let listsToLoad = [];
+              if (!this.selectedList) {
+                for (let k = 0; k < this.lists.length; k++) {
+                  listsToLoad.push(this.lists[k]);
+                }
+              } else {
+                if (this.showDependencies) {
+                  let dependencyList = await this.readAllDependencies(
+                    this.selectedList,
+                    this.lists
+                  );
+                  for (let k = 0; k < dependencyList.length; k++) {
+                    listsToLoad.push(dependencyList[k]);
+                  }
+                }
+
+                listsToLoad.push(this.selectedList);
+              }
+
+              this.totalDuration = moment.duration(0);
+
+              for (let k = 0; k < listsToLoad.length; k++) {
+                let list = listsToLoad[k];
+                let cards = list.cards;
+
+                for (let i = 0; i < cards.length; i++) {
+                  let card = cards[i];
+
+                  let appointmentsDataCard = await t.get(
+                    card.id,
+                    "shared",
+                    "appointments"
+                  );
+
+                  if (
+                    appointmentsDataCard &&
+                    appointmentsDataCard.appointments
+                  ) {
+                    let appointments = appointmentsDataCard.appointments;
+
+                    for (let j = 0; j < appointments.length; j++) {
+                      let appointment = appointments[j];
+
+                      let startDateTmp = moment(appointment.startDate);
+                      let endDateTmp = moment(appointment.endDate);
+                      appointment.startDate = startDateTmp;
+                      appointment.endDate = endDateTmp;
+
+                      if (!this.showExpired) {
+                        if (
+                          appointment.startDate.isBefore(moment()) ||
+                          card.dueComplete
+                        ) {
+                          continue;
+                        }
+                      }
+
+                      appointment.duration = moment.duration(
+                        appointment.endDate.diff(appointment.startDate)
+                      );
+                      appointment.dependencyListName = list.isDependency
+                        ? list.name
+                        : null;
+                      appointment.dueComplete = card.dueComplete;
+                      this.totalAppointments.push(appointment);
+
+                      this.totalDuration = this.totalDuration.add(
+                        appointment.duration
+                      );
+                    }
+                  }
+                }
+              }
+
+              this.totalAppointments = this.totalAppointments.sort((a, b) => {
+                return moment(a.startDate).diff(b.startDate);
+              });
+              
+              this.distributeAppointments();
+            },
+            readAllDependencies: async function(startList, lists) {
+              return new Promise(async function(resolve, reject) {
+                let loop = true;
+                let currentList = startList;
+                let counter = 0;
+                let dependencyList = [];
+                while (loop) {
+                  if (!currentList) {
+                    break;
+                  }
+                  let dependencyListId = await t.get(
+                    "board",
+                    "private",
+                    currentList.id + "dependencyListId"
+                  );
+                  let listIsActive = await t.get(
+                    "board",
+                    "private",
+                    currentList.id + "isActive"
+                  );
+                  if (dependencyListId && listIsActive) {
+                    currentList = lists.find(
+                      element => element.id === dependencyListId
+                    );
+                    if (currentList) {
+                      currentList.isDependency = true;
+                      dependencyList.push(currentList);
+                    }
+                  } else {
+                    break;
+                  }
+
+                  if (counter > 20) {
+                    break;
+                  }
+                  counter++;
+                }
+
+                resolve(dependencyList);
+              });
+            }
+          }
+        });
+      </script>
+    </div>
+    <style>
+      .chip {
+        display: inline-flex;
+        flex-direction: row;
+        background-color: #ededed;
+        border: none;
+        cursor: default;
+        width: 100%;
+        outline: none;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-size: 14px;
+        font-color: #333333;
+        white-space: nowrap;
+        align-items: center;
+        border-radius: 16px;
+        vertical-align: middle;
+        text-decoration: none;
+        margin-top: 5px;
+      }
+      .chip-content {
+        cursor: inherit;
+        align-items: center;
+        user-select: none;
+        white-space: nowrap;
+        padding-left: 12px;
+        padding-right: 12px;
+        width: 100%;
+      }
+
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #b5cee8;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      /* Style the buttons inside the tab */
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+        border-bottom-left-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+      }
+
+      .appointments__summary {
+        position: absolute;
+        top: 92%;
+        height: 40px;
+      }
+
+      /* Change background color of buttons on hover */
+      .tab button:hover {
+        background-color: #ddd;
+      }
+
+      /* Create an active/current tablink class */
+      .tab button.active {
+        background-color: #d2e5f7;
+      }
+
+      .appointment__expired {
+        background-color: #f9e3db;
+      }
+
+      .appointment__completed {
+        background-color: #dcffd9;
+      }
+
+      .generic__label {
+        float: left;
+        margin-right: 5px;
+      }
+
+      .generic__label__content {
+        display: block;
+        overflow: hidden;
+      }
+
+      .generic__width100 {
+        width: 100%;
+      }
+
+      /* Style the tab content */
+      .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+      }
+    </style>
+  </body>
+</html>

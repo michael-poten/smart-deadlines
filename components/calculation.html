@@ -96,13 +96,16 @@
             </div>
             <hr />
             <div style="text-align:right; width: 100%">
-              <span v-if="calculationStatus >= 1">
+              <span>
                 <button
-                  id="exportAsIcs"
-                  @click="exportAsIcs"
+                  id="showAppointments"
+                  @click="showAppointments"
+                  class="mod-primary"
+                  v-if="calculationStatus > 0"
                   :disabled="calculationStatus <= 1"
+                  style="width: 100%"
                 >
-                  Export as .ics file
+                  Show calculated appointments →
                 </button>
               </span>
 
@@ -208,7 +211,10 @@
               >
                 <div class="loader"></div>
               </span>
-              <span class="server-upload__content__ready" v-if="downloadIcsSuccess">
+              <span
+                class="server-upload__content__ready"
+                v-if="downloadIcsSuccess"
+              >
                 👌
               </span>
             </div>
@@ -323,26 +329,36 @@
 
               that.readAllDependencies();
             },
-            processExportAsIcs: function() {
-              let cal = ics();
-              
+            exportDataAsIcs: function() {
+              let appointments = [];
               for (let k = 0; k < this.totalAppointments.length; k++) {
                 let appointmentData = this.totalAppointments[k];
                 for (let j = 0; j < appointmentData.appointments.length; j++) {
-                  let appointment = appointmentData.appointments[j];
-                  let subject = appointment.cardName + (appointmentData.counter > 1 ? ' (' + (j+1) + '/' + appointmentData.counter + ')' : '');
-                  let startDate = moment(appointment.startDate).format();
-                  let endDate = moment(appointment.endDate).format();
-                  cal.addEvent(subject, "", "", startDate, endDate);
+                  appointments.push(appointmentData.appointments[j]);
                 }
-
               }
 
-              return cal;
+              return calprocess().exportIcs(appointments);
             },
-            exportAsIcs: function() {
-              let cal = this.processExportAsIcs();
-              cal.download("smart-deadlines");
+            showAppointments: function() {
+              let appointments = [];
+              for (let k = 0; k < this.totalAppointments.length; k++) {
+                let appointmentData = this.totalAppointments[k];
+                for (let j = 0; j < appointmentData.appointments.length; j++) {
+                  appointments.push(appointmentData.appointments[j]);
+                }
+              }
+
+              t.closeModal();
+              t.modal({
+                url: "./appointments.html",
+                accentColor: "#CDD3D8",
+                height: 600,
+                fullscreen: false,
+                title: "Appointments",
+                args: { resultAppointments: appointments },
+                actions: []
+              });
             },
             findListById: function(idOfList) {
               let list = this.lists.find(element => element.id === idOfList);
@@ -362,7 +378,6 @@
               });
             },
             execute: async function() {
-              
               let that = this;
               let startDateObject;
               if (
@@ -381,12 +396,6 @@
               await t.set(
                 "board",
                 "private",
-                "exportServerName",
-                this.exportServerName
-              );
-              await t.set(
-                "board",
-                "private",
                 "exportEnabled",
                 this.exportEnabled
               );
@@ -395,7 +404,7 @@
                 t.closeModal();
                 return;
               }
-              
+
               this.calculationStatus = 1;
 
               await calsync()
@@ -415,13 +424,13 @@
                 for (let i = this.dependencies.length - 1; i >= 0; i--) {
                   this.currentRunningIndex = i;
                   let breakLoop = false;
-                  
+
                   await calprocess()
                     .startDateCalculation(
                       t,
                       this.dependencies[i].id,
                       lastEndDate,
-                     this.icsData
+                      this.icsData
                     )
                     .then(function(calculationResult) {
                       if (calculationResult.lastEndDate) {
@@ -431,6 +440,17 @@
                           k < calculationResult.totalAppointments.length;
                           k++
                         ) {
+                          for (
+                            let j = 0;
+                            j <
+                            calculationResult.totalAppointments[k].appointments
+                              .length;
+                            j++
+                          ) {
+                            calculationResult.totalAppointments[k].appointments[
+                              j
+                            ].dependencyListName = that.dependencies[i].name;
+                          }
                           that.totalAppointments.push(
                             calculationResult.totalAppointments[k]
                           );
@@ -452,48 +472,23 @@
               }
 
               if (this.exportEnabled && !this.errorText) {
-                let bodyFormData = new FormData();
+                let cal = this.exportDataAsIcs();
 
-                let cal = this.processExportAsIcs();
-
-                var blob;
-                if (navigator.userAgent.indexOf("MSIE 10") === -1) {
-                  // chrome or firefox
-                  blob = new Blob([cal.calendar()], { type: "text/calendar" });
-                } else {
-                  // ie
-                  var bb = new BlobBuilder();
-                  bb.append(cal.calendar());
-                  blob = bb.getBlob(
-                    "text/x-vCalendar;charset=" + document.characterSet
-                  );
-                }
-
-                bodyFormData.append(
-                  "ics",
-                  blob,
-                  this.exportServerName + ".ics"
-                );
-
-                let that = this;
-                axios({
-                  method: "post",
-                  url: this.exportServer + "/ics-upload",
-                  data: bodyFormData,
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                    token: this.exportServerKey,
-                    filename: this.exportServerName + ".ics"
-                  }
-                }).then(function(response) {
-                  that.exportSuccess = true;
-                  that.exportCalUrl =
-                    that.exportServer + response.data.data.url;
-                })
-                .catch(function(error) {
-                  console.log("error", error);
-                  that.errorText = "Could not upload ics file!";
-                });
+                await calprocess()
+                  .uploadIcsData(
+                    t, 
+                    cal,
+                    this.exportServer,
+                    this.exportServerKey,
+                    this.exportServerName
+                  )
+                  .then(function(response) {
+                    that.exportSuccess = true;
+                    that.exportCalUrl = response;
+                  })
+                  .catch(function(error) {
+                    that.errorText = error;
+                  });
               }
 
               if (this.errorText) {
