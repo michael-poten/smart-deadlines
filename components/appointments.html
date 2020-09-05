@@ -10,11 +10,11 @@
           <div style="float: left; vertical-align: middle; margin-top: 12px;">
             <span>
               <input
-                type="checkbox"
-                id="showExpired"
-                name="showExpired"
-                style="margin-left: 15px"
-                v-model="showExpired"
+                      type="checkbox"
+                      id="showExpired"
+                      name="showExpired"
+                      style="margin-left: 15px"
+                      v-model="showExpired"
               />
               <span for="showExpired">
                 Expired / completed appointments
@@ -29,10 +29,7 @@
                 v-model="showDependencies"
                 v-if="!selectedResultAppointments && selectedList"
               />
-              <span
-                for="showDependencies"
-                v-if="!selectedResultAppointments && selectedList"
-              >
+              <span for="showDependencies" v-if="!selectedResultAppointments && selectedList">
                 With dependencies
               </span>
             </span>
@@ -265,7 +262,7 @@
                   appointment.duration
                 );
               }
-              
+
               this.distributeAppointments();
             },
             uploadIcs: function() {
@@ -426,12 +423,9 @@
                         }
                       }
 
-                      appointment.duration = moment.duration(
-                        appointment.endDate.diff(appointment.startDate)
-                      );
-                      appointment.dependencyListName = list.isDependency
-                        ? list.name
-                        : null;
+                      appointment.duration = moment.duration(appointment.endDate.diff(appointment.startDate));
+                      appointment.dependencyListName = list.isDependency ? list.name : null;
+                      appointment.dueComplete = card.dueComplete;
                       appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
 
@@ -446,7 +440,7 @@
               this.totalAppointments = this.totalAppointments.sort((a, b) => {
                 return moment(a.startDate).diff(b.startDate);
               });
-              
+
               this.distributeAppointments();
             },
             readAllDependencies: async function(startList, lists) {
