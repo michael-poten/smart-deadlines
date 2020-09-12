@@ -15,6 +15,7 @@
                 name="showExpired"
                 style="margin-left: 15px"
                 v-model="showExpired"
+                :disabled="dayAppointments.length === 0"
               />
               <span for="showExpired">
                 Expired / completed appointments
@@ -28,6 +29,7 @@
                 style="margin-left: 15px"
                 v-model="showDependencies"
                 v-if="!selectedResultAppointments && selectedList"
+                :disabled="dayAppointments.length == 0"
               />
               <span
                 for="showDependencies"
@@ -40,6 +42,7 @@
           <div style="float: right">
             <span>
               <button
+                :disabled="dayAppointments.length === 0"
                 id="showExport"
                 @click="exportEnabled = !exportEnabled"
                 class="mod-primary"
@@ -49,12 +52,22 @@
               </button>
             </span>
             <span>
-              <button id="exportAsIcs" @click="exportAsIcs" class="mod-primary">
+              <button
+                id="exportAsIcs"
+                @click="exportAsIcs"
+                class="mod-primary"
+                :disabled="dayAppointments.length === 0"
+              >
                 ICS
               </button>
             </span>
             <span>
-              <button id="exportAsCsv" @click="exportAsCsv" class="mod-primary">
+              <button
+                id="exportAsCsv"
+                @click="exportAsCsv"
+                class="mod-primary"
+                :disabled="dayAppointments.length === 0"
+              >
                 CSV
               </button>
             </span>
@@ -119,8 +132,14 @@
             </button>
           </div>
           <div style="padding: 10px; height: 70%; overflow: auto;">
-            <div v-for="dayAppointment in dayAppointments" style="margin-top: 10px" >
-              <span style="width: 10%; display: inline-block; vertical-align: top; margin-top: 7px; font-size: 1.4em">
+            <div
+              v-if="dayAppointments.length > 0"
+              v-for="dayAppointment in dayAppointments"
+              style="margin-top: 10px"
+            >
+              <span
+                style="width: 10%; display: inline-block; vertical-align: top; margin-top: 7px; font-size: 1.4em"
+              >
                 {{ dayAppointment.day | formatDate }}
               </span>
               <span style="width: 89%; display: inline-block">
@@ -134,8 +153,8 @@
                       {{ appointment.cardName }} {{
                       appointment.dependencyListName && ((selectedList &&
                       appointment.dependencyListName !== selectedList.name) ||
-                      resultAppointments) ? "(" +
-                        appointment.dependencyListName + ")" : "" }}
+                      resultAppointments) ? "(" + appointment.dependencyListName
+                      + ")" : "" }}
                     </div>
                     <div style="font-size: 1.1em">
                       <i
@@ -147,6 +166,30 @@
                 </div>
               </span>
             </div>
+            <span
+              v-if="dayAppointments.length === 0 && !isLoading"
+              style="margin-top: 100px;"
+            >
+              <div style="text-align:center; padding: 100px">
+                <h2>
+                  🙈 Oh, there's nothing to see here...
+                </h2>
+                <div>
+                                  <p style="font-size: 1.3em; margin-top: 50px;">
+                  Remember, the first thing to do is to activate a list and give
+                  a time estimate for each card. After you have done the
+                  calculation, you can see the resulting dates here.🎉
+                </p>
+                <p  style="font-size: 1.2em; margin-top: 30px; padding-left: 50px; padding-right: 50px">
+                  <i
+                    >Need more help?<br/>Simply follow the step-by-step instructions <a href @click="showInstructionsModalDialog">here.</a>
+                  </i
+                  >
+                </p>
+                </div>
+
+              </div>
+            </span>
           </div>
         </div>
         <div
@@ -189,7 +232,8 @@
             showDependencies: true,
             showExpired: false,
             totalDuration: moment.duration(0),
-            dayAppointments: []
+            dayAppointments: [],
+            isLoading: true
           },
           watch: {
             showDependencies: function() {
@@ -240,7 +284,7 @@
             selectResultAppointments: function() {
               this.selectedResultAppointments = true;
               this.totalAppointments = [];
-              this.totalDuration = moment.duration(0);
+              let totalDurationTmp = moment.duration(0);
 
               for (let j = 0; j < this.resultAppointments.length; j++) {
                 let appointment = this.resultAppointments[j];
@@ -261,12 +305,14 @@
                 );
                 this.totalAppointments.push(appointment);
 
-                this.totalDuration = this.totalDuration.add(
-                  appointment.duration
-                );
+                totalDurationTmp = totalDurationTmp.add(appointment.duration);
               }
-              
+
+              this.totalDuration = totalDurationTmp;
+
               this.distributeAppointments();
+              
+              this.isLoading = false;
             },
             uploadIcs: function() {
               let that = this;
@@ -287,6 +333,18 @@
                 .catch(function(error) {
                   that.errorText = error;
                 });
+            },
+            showInstructionsModalDialog: function() {
+              t.closeModal();
+              t.modal({
+                url: "./setup-finish.html",
+                args: { isInstructions: true },
+                accentColor: "#CDD3D8",
+                height: 600,
+                fullscreen: false,
+                title: "Configurate Smart Deadlines",
+                actions: []
+              });
             },
             distributeAppointments: function() {
               this.dayAppointments = [];
@@ -388,7 +446,7 @@
                 listsToLoad.push(this.selectedList);
               }
 
-              this.totalDuration = moment.duration(0);
+              let totalDurationTmp = moment.duration(0);
 
               for (let k = 0; k < listsToLoad.length; k++) {
                 let list = listsToLoad[k];
@@ -433,9 +491,10 @@
                         ? list.name
                         : null;
                       appointment.dueComplete = card.dueComplete;
+                      appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);
 
-                      this.totalDuration = this.totalDuration.add(
+                      totalDurationTmp = totalDurationTmp.add(
                         appointment.duration
                       );
                     }
@@ -443,11 +502,14 @@
                 }
               }
 
+              this.totalDuration = totalDurationTmp;
+
               this.totalAppointments = this.totalAppointments.sort((a, b) => {
                 return moment(a.startDate).diff(b.startDate);
               });
-              
+
               this.distributeAppointments();
+              this.isLoading = false;
             },
             readAllDependencies: async function(startList, lists) {
               return new Promise(async function(resolve, reject) {
@@ -548,7 +610,7 @@
 
       .appointments__summary {
         position: absolute;
-        top: 92%;
+        top: 93.3%;
         height: 40px;
       }
 
