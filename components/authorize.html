@@ -24,7 +24,9 @@
         document.getElementById("content").style.margin = "20px";
         document.getElementById("content").style.textAlign = "center";
       }
-      let absoluteUrl = window.TrelloPowerUp.util.relativeUrl("./auth-success.html");
+      let absoluteUrl = window.TrelloPowerUp.util.relativeUrl(
+        "./auth-success.html"
+      );
       let returnUrl = encodeURI(absoluteUrl);
 
       let trelloAuthUrl = `https://trello.com/1/authorize?expiration=never&name=Smart%20Deadlines&scope=read,write&key=${apiKey}&callback_method=fragment&return_url=${returnUrl}`;
@@ -45,18 +47,19 @@
           .then(function() {
             if (isModal) {
               t.closeModal();
-
-              return t.modal({
-                url: "./setup-finish.html",
-                args: { isInstructions: true },
-                accentColor: "#CDD3D8",
-                height: 180,
-                fullscreen: false,
-                title: "Setup finished",
-                actions: []
-              });
+            } else {
+              t.closePopup();
             }
-            return t.closePopup();
+
+            return t.modal({
+              url: "./setup-finish.html",
+              args: { isInstructions: true },
+              accentColor: "#CDD3D8",
+              height: 600,
+              fullscreen: false,
+              title: "Configurate Smart Deadlines",
+              actions: []
+            });
           });
       });
     </script>

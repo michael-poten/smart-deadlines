@@ -2,13 +2,152 @@
   <head>
     <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
   </head>
-  <body style="padding: 20px">
-    <h3>
-      Permissions successfully granted! Now it is time to config Smart Deadline!
-    </h3>
-    <p>
-      To do this, select the list of your choice and go to the list menu. There
-      you can change the settings of this list.
-    </p>
+  <body style="padding: 20px; background-color: #f4faff;">
+    <div style="text-align: center">
+      <h2>
+        It is time to config Smart Deadline!
+      </h2>
+      <h4>
+        To do this, please follow the instructions below.
+      </h4>
+      <hr />
+      <div>
+        <span class="step__image">
+          <img
+            src="https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/settings_summary.PNG"
+            alt="Settings"
+            width="300"
+            height="*"
+          />
+        </span>
+        <span class="step__content">
+          <h3>
+            Step 1
+          </h3>
+          <p>
+            Enter the URL to your iCal calendar in the Power-Up settings.
+          </p>
+          <p class="step__content__extra">
+            <i>
+              Optional: Configure your own SmartDeadline server to upload
+              calculated card appointments as *.ics.</i
+            >
+          </p>
+        </span>
+      </div>
+      <hr />
+      <div class="step">
+        <span class="step__content">
+          <h3>
+            Step 2
+          </h3>
+          Activate Smart Deadline for one or more list.
+        </span>
+        <span class="step__image">
+          <img
+            src="https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/list_action_activate.PNG"
+            alt="Activate list"
+            width="300"
+            height="*"
+          />
+        </span>
+      </div>
+      <hr />
+      <div class="step">
+        <span class="step__image">
+          <img
+            src="https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/card_estimation.PNG"
+            alt="Card estimation"
+            width="300"
+            height="*"
+          />
+        </span>
+        <span class="step__content">
+          <h4>
+            Step 3
+          </h4>
+          <p>
+            Estimate a duration for each card of the activated lists.
+          </p>
+          <p class="step__content__extra">
+            <i>
+              After the card appointments have been calculated, they are also
+              displayed here.</i
+            >
+          </p>
+        </span>
+      </div>
+      <hr />
+      <div class="step">
+        <span class="step__content">
+          <h3>
+            Step 4
+          </h3>
+          Run the calculation of card appointments.
+          <p class="step__content__extra">
+            <i>
+              If other lists are to be calculated first, you can add them as
+              dependencies.</i
+            >
+          </p>
+        </span>
+        <span class="step__image">
+          <img
+            src="https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/calculation.PNG"
+            alt="Calculation"
+            width="300"
+            height="*"
+          />
+        </span>
+      </div>
+      <hr />
+      <div style="margin-top: 20px">
+        <span class="step__image">
+          <img
+            src="https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/card_appointments.PNG"
+            alt="Card appointments"
+            width="300"
+            height="*"
+          />
+        </span>
+        <span class="step__content">
+          <h2>
+            Finish 🎉
+          </h2>
+          <p>
+            The board button "Smart Deadlines" gives you an overview of all
+            calculated card appointments.
+          </p>
+        </span>
+      </div>
+      <h3></h3>
+    </div>
+    <style>
+      .step__content {
+        vertical-align: middle;
+        text-align: center;
+        width: 39%;
+        display: inline-block;
+        font-size: 1.4em;
+        font-weight: 600;
+      }
+      
+      .step {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+
+      .step__content__extra {
+        font-size: 0.8em;
+        margin-top: 20px;
+      }
+
+      .step__image {
+        vertical-align: middle;
+        margin-top: 12px;
+        width: 60%;
+        display: inline-block;
+      }
+    </style>
   </body>
 </html>

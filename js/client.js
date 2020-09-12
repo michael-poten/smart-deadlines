@@ -92,7 +92,7 @@ TrelloPowerUp.initialize(
                   accentColor: "#CDD3D8",
                   height: 600,
                   fullscreen: false,
-                  title: "Appointments",
+                  title: "Card appointments",
                   actions: []
                 });
               }
