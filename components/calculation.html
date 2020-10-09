@@ -283,7 +283,7 @@
                 "exportServer"
               );
 
-              if (!this.exportServer) {
+              if (!this.generalExportEnabled) {
                 this.exportEnabled = false;
               } else {
                 this.exportEnabled = await t.get(
