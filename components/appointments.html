@@ -46,7 +46,7 @@
                 id="showExport"
                 @click="exportEnabled = !exportEnabled"
                 class="mod-primary"
-                v-if="exportServer"
+                v-if="exportServer && generalExportEnabled"
               >
                 Upload
               </button>
@@ -229,6 +229,7 @@
             exportServerName: "",
             exportSuccess: false,
             exportCalUrl: "",
+            generalExportEnabled: false,
             showDependencies: true,
             showExpired: false,
             totalDuration: moment.duration(0),
@@ -406,10 +407,17 @@
                 "private",
                 "exportServerKey"
               );
+              
               this.exportServerName = await t.get(
                 "board",
                 "private",
                 "exportServerName"
+              );
+              
+              this.generalExportEnabled = await t.get(
+                "board",
+                "private",
+                "ownServerActive"
               );
 
               if (this.selectedResultAppointments) {
