@@ -56,7 +56,7 @@
               </button>
               <hr />
             </div>
-            <div v-if="exportServer">
+            <div v-if="exportServer && generalExportEnabled">
               <input
                 type="checkbox"
                 id="exportEnabled"
@@ -250,6 +250,7 @@
             calculationStatus: 0,
             currentRunningIndex: null,
             totalAppointments: [],
+            generalExportEnabled: false,
             exportEnabled: false,
             exportServer: null,
             exportServerKey: null,
@@ -270,6 +271,12 @@
             initData: async function() {
               let that = this;
 
+              this.generalExportEnabled = await t.get(
+                "board",
+                "private",
+                "ownServerActive"
+              );
+              
               this.exportServer = await t.get(
                 "board",
                 "private",
