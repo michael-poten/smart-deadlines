@@ -197,10 +197,22 @@ var calsync = function() {
           return;
         }
 
+        let generalExportEnabled = await t.get(
+          "board",
+          "private",
+          "ownServerActive"
+        );
+        
         let exportServer = await t.get("board", "private", "exportServer");
 
         let dataInput;
-        if (exportServer) {
+        if (generalExportEnabled) {
+          
+          if (!exportServer) {
+            reject("Error! Please set the URL to your SmartDeadlines-server!");
+            return;
+          }
+          
           let exportServerKey = await t.get(
             "board",
             "private",
@@ -218,7 +230,7 @@ var calsync = function() {
               that.dataInput = result.data;
             })
             .catch(function(error) {
-              that.errorText = "Could not connect to iCal-server!";
+              that.errorText = "Could not connect to iCal-Url or your SmartDeadlines-server!";
             });
         } else {
           await axios({
@@ -239,7 +251,7 @@ var calsync = function() {
         }
 
         if (!this.dataInput) {
-          reject("Sorry, could net connect to iCal-Calendar!");
+          reject("Sorry, could not connect to iCal-Calendar!");
           return;
         }
 
