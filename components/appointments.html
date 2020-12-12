@@ -10,11 +10,11 @@
           <div style="float: left; vertical-align: middle; margin-top: 12px;">
             <span>
               <input
-                type="checkbox"
-                id="showExpired"
-                name="showExpired"
-                style="margin-left: 15px"
-                v-model="showExpired"
+                      type="checkbox"
+                      id="showExpired"
+                      name="showExpired"
+                      style="margin-left: 15px"
+                      v-model="showExpired"
                 :disabled="dayAppointments.length === 0"
               />
               <span for="showExpired">
@@ -31,10 +31,7 @@
                 v-if="!selectedResultAppointments && selectedList"
                 :disabled="dayAppointments.length == 0"
               />
-              <span
-                for="showDependencies"
-                v-if="!selectedResultAppointments && selectedList"
-              >
+              <span for="showDependencies" v-if="!selectedResultAppointments && selectedList">
                 With dependencies
               </span>
             </span>
@@ -312,7 +309,7 @@
               this.totalDuration = totalDurationTmp;
 
               this.distributeAppointments();
-              
+
               this.isLoading = false;
             },
             uploadIcs: function() {
@@ -492,12 +489,9 @@
                         }
                       }
 
-                      appointment.duration = moment.duration(
-                        appointment.endDate.diff(appointment.startDate)
-                      );
-                      appointment.dependencyListName = list.isDependency
-                        ? list.name
-                        : null;
+                      appointment.duration = moment.duration(appointment.endDate.diff(appointment.startDate));
+                      appointment.dependencyListName = list.isDependency ? list.name : null;
+                      appointment.dueComplete = card.dueComplete;
                       appointment.dueComplete = card.dueComplete;
                       appointment.dueComplete = card.dueComplete;
                       this.totalAppointments.push(appointment);

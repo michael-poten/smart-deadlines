@@ -10,11 +10,11 @@ At this time we do not collect any personally identifiable data. We temporarily 
 
 ### What do we use your data for
 
-We use the calendar appointments to calculate the due dates.
+We use the iCal calendar appointments to calculate the due dates/appointments of the Trello cards.
 
 ### How do we protect your data
 
-Calendar appointments are never stored and all calculations are performed in your browser. A third-party service is used to download the iCal data ("https://cors-anywhere.herokuapp.com"). This is necessary to avoid conflicts with specially configured iCal-Services. The data is otherwise only be shared where legally required.
+Calendar appointments are never stored and all calculations are performed in your browser. A third-party service is used to download the iCal data ("https://cors-anywhere.herokuapp.com").  If you have configured your own Smart Deadlines service on your server, the download of the iCal calendar will be done through it. The download via an external service is necessary to avoid conflicts with specially configured iCal-Services. The data is otherwise only be shared where legally required.
 
 ### How long do we keep your data
 
