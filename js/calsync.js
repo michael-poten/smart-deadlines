@@ -162,7 +162,7 @@ var calsync = function() {
                 if (showRecurrence === true) {
                   
                   
-                  if (mustStartBeChanged) {
+                  if (mustStartBeChanged && moment(startDate).isDST() == moment().isDST()) {
                     if (moment().isDST()) {
                       startDate = moment(startDate).clone().subtract(1, "hours");
                     } else {
@@ -170,7 +170,7 @@ var calsync = function() {
                     }
                   }
                   
-                  if (mustEndBeChanged) {
+                  if (mustEndBeChanged && moment(endDate).isDST() == moment().isDST()) {
                     if (moment().isDST()) {
                       endDate = moment(endDate).clone().subtract(1, "hours");
                     } else {
