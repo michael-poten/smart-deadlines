@@ -39,6 +39,7 @@ var calsync = function() {
               continue;
             }
 
+
             let startDate = moment(event.start);
             let endDate;
             if (!event.end) {
@@ -46,6 +47,9 @@ var calsync = function() {
             } else {
               endDate = moment(event.end);
             }
+            
+            let mustStartBeChanged = moment(startDate).isDST() != moment().isDST();
+            let mustEndBeChanged = moment(endDate).isDST() != moment().isDST();
 
             let duration =
               parseInt(endDate.format("x")) - parseInt(startDate.format("x"));
@@ -118,6 +122,7 @@ var calsync = function() {
 
               for (let i in dates) {
                 let date = dates[i];
+
                 let curEvent = event;
                 let showRecurrence = true;
                 let curDuration = duration;
@@ -155,6 +160,24 @@ var calsync = function() {
                 }
 
                 if (showRecurrence === true) {
+                  
+                  
+                  if (mustStartBeChanged) {
+                    if (moment().isDST()) {
+                      startDate = moment(startDate).clone().subtract(1, "hours");
+                    } else {
+                      startDate = moment(startDate).clone().add(1, "hours");
+                    }
+                  }
+                  
+                  if (mustEndBeChanged) {
+                    if (moment().isDST()) {
+                      endDate = moment(endDate).clone().subtract(1, "hours");
+                    } else {
+                      endDate = moment(endDate).clone().add(1, "hours");
+                    }
+                  }
+                  
                   events.push({
                     title: curEvent.summary,
                     description: curEvent.description,
