@@ -232,7 +232,7 @@ var calsync = function() {
         if (generalExportEnabled) {
           
           if (!exportServer) {
-            reject("Error! Please set the URL to your SmartDeadlines-server!");
+            reject("Error! Please set the URL to your Smart Deadlines-server!");
             return;
           }
           
@@ -253,7 +253,7 @@ var calsync = function() {
               that.dataInput = result.data;
             })
             .catch(function(error) {
-              that.errorText = "Could not connect to iCal-Url or your SmartDeadlines-server!";
+              that.errorText = "Could not connect to iCal-Url or to your Smart Deadlines-server!";
             });
         } else {
           await axios({
