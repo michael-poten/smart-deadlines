@@ -258,7 +258,7 @@ var calsync = function() {
         } else {
           await axios({
             method: "get",
-            url: "https://cors-anywhere.herokuapp.com/" + linkToCal
+            url: "https://smart-deadlines-cors.herokuapp.com/" + linkToCal
           })
             .then(function(result) {
               that.dataInput = result.data;
