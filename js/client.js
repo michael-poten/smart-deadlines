@@ -1,9 +1,9 @@
 /* global TrelloPowerUp */
 
 let GRAY_ICON =
-  "https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/timelapse.svg";
+  "https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/timelapse.svg";
 let COUNTER_GRAY_ICON =
-  "https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/counter.svg";
+  "https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/counter.svg";
 
 let setCardEstimation = function(t, value) {
   t.set("card", "shared", "estimation", value);

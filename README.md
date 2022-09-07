@@ -4,7 +4,7 @@ The [Trello](https://trello.com/) Power-Up 'Smart Deadlines' can be used to dist
 
 **Important: The origin iCal-Calendar is only imported and will never be changed.**
 
-![](https://raw.githubusercontent.com/michael-roedel/smart-deadlines/master/images/lists.PNG)
+![](https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/lists.PNG)
 
 ## Contribution
 
