@@ -257,8 +257,8 @@ var calsync = function() {
             });
         } else {
           let linkToCalTmp = linkToCal
-          linkToCalTmp.replace('https://', '')
-          linkToCalTmp.replace('http://', '')
+          linkToCalTmp = linkToCalTmp.replace('https://', '')
+          linkToCalTmp = linkToCalTmp.replace('http://', '')
           await axios({
             method: "get",
             url: "https://smart-deadlines.de/" + linkToCalTmp
