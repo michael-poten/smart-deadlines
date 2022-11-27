@@ -256,9 +256,12 @@ var calsync = function() {
               that.errorText = "Could not connect to iCal-Url or to your Smart Deadlines-server!";
             });
         } else {
+          let linkToCalTmp = linkToCal
+          linkToCalTmp.replace('https://', '')
+          linkToCalTmp.replace('http://', '')
           await axios({
             method: "get",
-            url: "https://smart-deadlines.de/" + linkToCal
+            url: "https://smart-deadlines.de/" + linkToCalTmp
           })
             .then(function(result) {
               that.dataInput = result.data;
