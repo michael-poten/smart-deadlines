@@ -229,7 +229,7 @@
                 ⚠
               </span>
             </div>
-            <div>
+            <div v-if="useIcalCalendar">
               <div>
                 ↑
               </div>
@@ -303,6 +303,8 @@
           methods: {
             initData: async function() {
               let that = this;
+
+              this.useIcalCalendar = !!await t.get("board", "private", "linkToCal");
 
               this.generalExportEnabled = await t.get(
                 "board",
