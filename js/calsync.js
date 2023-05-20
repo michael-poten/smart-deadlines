@@ -208,8 +208,56 @@ var calsync = function() {
         resolve(events);
       });
     },
-    downloadIcalCalendar: function(t) {
+    downloadIcalCalendar: function(t, useBasicCalendar) {
       return new Promise(async function(resolve, reject) {
+
+        if (useBasicCalendar) {
+          let data = ical.parseICS("BEGIN:VCALENDAR\n" +
+              "PRODID:-//Google Inc//Google Calendar 70.9054//EN\n" +
+              "VERSION:2.0\n" +
+              "CALSCALE:GREGORIAN\n" +
+              "METHOD:PUBLISH\n" +
+              "X-WR-CALNAME:Testkalender\n" +
+              "X-WR-TIMEZONE:Europe/Berlin\n" +
+              "BEGIN:VTIMEZONE\n" +
+              "TZID:Europe/Berlin\n" +
+              "X-LIC-LOCATION:Europe/Berlin\n" +
+              "BEGIN:DAYLIGHT\n" +
+              "TZOFFSETFROM:+0100\n" +
+              "TZOFFSETTO:+0200\n" +
+              "TZNAME:CEST\n" +
+              "DTSTART:19700329T020000\n" +
+              "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\n" +
+              "END:DAYLIGHT\n" +
+              "BEGIN:STANDARD\n" +
+              "TZOFFSETFROM:+0200\n" +
+              "TZOFFSETTO:+0100\n" +
+              "TZNAME:CET\n" +
+              "DTSTART:19701025T030000\n" +
+              "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\n" +
+              "END:STANDARD\n" +
+              "END:VTIMEZONE\n" +
+              "BEGIN:VEVENT\n" +
+              "DTSTART;TZID=Europe/Berlin:20230401T030000\n" +
+              "DTEND;TZID=Europe/Berlin:20230402T025900\n" +
+              "RRULE:FREQ=DAILY\n" +
+              "DTSTAMP:20230520T080340Z\n" +
+              "UID:3kua6lq12hq8i756ba0tkikugp@google.com\n" +
+              "CREATED:20230520T080322Z\n" +
+              "DESCRIPTION:\n" +
+              "LAST-MODIFIED:20230520T080322Z\n" +
+              "LOCATION:\n" +
+              "SEQUENCE:0\n" +
+              "STATUS:CONFIRMED\n" +
+              "SUMMARY:Tasks\n" +
+              "TRANSP:OPAQUE\n" +
+              "END:VEVENT\n" +
+              "END:VCALENDAR");
+
+          resolve(data);
+          return;
+        }
+
         let that = this;
         let errorText;
 

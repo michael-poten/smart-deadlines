@@ -27,6 +27,36 @@
                 />
               </span>
             </div>
+            <div>
+              <label for="startTimeInput" class="generic__label">
+                Start time:
+              </label>
+              <span class="generic__label__content">
+                <input
+                  type="date"
+                  id="startTimeInput"
+                  name="startTimeInput"
+                  placeholder="Start time"
+                  class="generic__width100"
+                  :disabled="calculationStatus >= 1"
+                  v-model="startTimeInput"
+                />
+              </span>
+            </div>
+            <hr/>
+            <div>
+              <input
+                  type="checkbox"
+                  id="useIcalCalendar"
+                  name="useIcalCalendar"
+                  :disabled="calculationStatus === 2"
+                  style="margin-left: 3px"
+                  v-model="useIcalCalendar"
+              />
+              <span for="useIcalCalendar">
+                Use iCal Calendar from settings
+              </span>
+            </div>
             <hr />
             <div v-if="calculationStatus === 0">
               <span style="display: inline-block;">
@@ -258,11 +288,14 @@
             exportSuccess: false,
             exportCalUrl: "",
             startDateInput: null,
+            startTimeInput: null,
             errorText: null,
-            downloadIcsSuccess: false
+            downloadIcsSuccess: false,
+            useIcalCalendar: false,
           },
           mounted() {
             this.startDateInput = moment().format("YYYY[-]MM[-]DD");
+            this.startTimeInput = moment().format("HH:mm");
             this.listId = t.arg("listId");
             this.listName = t.arg("listName");
             this.initData();
@@ -387,19 +420,18 @@
             },
             execute: async function() {
               let that = this;
-              let startDateObject;
-              if (
-                !this.startDateInput ||
-                moment().format("YYYY[-]MM[-]DD") === this.startDateInput
-              ) {
+
+              if (!this.startDateInput) {
                 this.startDateInput = moment().format("YYYY[-]MM[-]DD");
-                startDateObject = moment();
-              } else {
-                startDateObject = moment(
-                  this.startDateInput,
-                  "YYYY-MM-DD"
-                ).startOf("day");
               }
+              if (!this.startTimeInput) {
+                this.startTimeInput = moment().format("HH:mm");
+              }
+
+              let startDateObject = moment(
+                this.startDateInput + ' ' + this.startTimeInput,
+                "YYYY-MM-DD HH:mm"
+              );
 
               await t.set(
                 "board",
@@ -416,7 +448,7 @@
               this.calculationStatus = 1;
 
               await calsync()
-                .downloadIcalCalendar(t)
+                .downloadIcalCalendar(t, !this.useIcalCalendar)
                 .then(async function(result) {
                   that.icsData = result;
                 })
