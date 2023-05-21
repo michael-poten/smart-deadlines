@@ -481,7 +481,8 @@
                       t,
                       this.dependencies[i].id,
                       lastEndDate,
-                      this.icsData
+                      this.icsData,
+                      this.useIcalCalendar
                     )
                     .then(function(calculationResult) {
                       if (calculationResult.lastEndDate) {

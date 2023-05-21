@@ -1,6 +1,6 @@
 var calsync = function() {
   return {
-    extractDates: function(t, listId, rangeStartInput, data) {
+    extractDates: function(t, listId, rangeStartInput, data, useIcalCalendar) {
       return new Promise(async function(resolve, reject) {
         let that = this;
         let errorText;
@@ -12,10 +12,12 @@ var calsync = function() {
         );
 
         let pattern;
-        if (!listIsActive) {
-          pattern = await t.get("board", "private", "patternToUse");
-        } else {
-          pattern = await t.get("board", "private", listId + "patternToUse");
+        if (useIcalCalendar) {
+          if (!listIsActive) {
+            pattern = await t.get("board", "private", "patternToUse");
+          } else {
+            pattern = await t.get("board", "private", listId + "patternToUse");
+          }
         }
 
         if (!pattern) pattern = "";

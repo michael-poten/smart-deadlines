@@ -174,7 +174,7 @@ var calprocess = function() {
           });
       });
     },
-    startDateCalculation: async function(t, listId, startDate, icsData) {
+    startDateCalculation: async function(t, listId, startDate, icsData, useIcalCalendar) {
       return new Promise(async function(resolve, reject) {
         // let token = await t.get("board", "private", "token");
         // if (!token) {
@@ -186,7 +186,7 @@ var calprocess = function() {
         startDateForExtract.startOf("day");
 
         await calsync()
-          .extractDates(t, listId, startDateForExtract, icsData)
+          .extractDates(t, listId, startDateForExtract, icsData, useIcalCalendar)
           .then(async function(events) {
             let endDateTmp;
             let startDateTmp;
