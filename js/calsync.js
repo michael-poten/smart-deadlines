@@ -197,7 +197,7 @@ var calsync = function() {
 
         if (events.length === 0) {
           reject(
-            "No event found in iCal-Calendar" +
+            "No event found in iCal-calendar" +
               (pattern === ".*" ? "" : " with configured title") +
               "!"
           );
@@ -264,7 +264,7 @@ var calsync = function() {
         let linkToCal = await t.get("board", "private", "linkToCal");
 
         if (!linkToCal) {
-          reject("Error! Please set the link to the iCal-Calendar!");
+          reject("Error! Please set the link to the iCal-calendar!");
           return;
         }
 
@@ -325,7 +325,7 @@ var calsync = function() {
         }
 
         if (!this.dataInput) {
-          reject("Sorry, could not connect to iCal-Calendar!");
+          reject("Sorry, could not connect to iCal-calendar!");
           return;
         }
 

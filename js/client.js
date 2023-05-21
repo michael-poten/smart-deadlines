@@ -110,7 +110,7 @@ TrelloPowerUp.initialize(
                   url: "../components/calculation.html",
                   accentColor: "#CDD3D8",
                   args: { listId: list.id, listName: list.name },
-                  height: 412,
+                  height: 500,
                   fullscreen: false,
                   title: "Calculation of smart deadlines",
                   actions: []
