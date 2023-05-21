@@ -199,9 +199,8 @@ var calprocess = function() {
               return;
             }
 
-            let cards = await getCardsByListId(t, listId);
-            let cardsTemp = await t.cards("all");
-            console.log("cardsTemp", cardsTemp)
+            // let cards = await getCardsByListId(t, listId);
+            let cards = (await t.cards("all")).filter(t => t.idList === listId);
 
             let currentEventIndex = 0;
             let event = events[currentEventIndex];
