@@ -104,7 +104,7 @@ TrelloPowerUp.initialize(
         if (isActive) {
           return [
             {
-              text: "Calculate smart deadlines...",
+              text: "Calculate due dates...",
               callback: function(t1) {
                 return t.modal({
                   url: "../components/calculation.html",
@@ -112,7 +112,7 @@ TrelloPowerUp.initialize(
                   args: { listId: list.id, listName: list.name },
                   height: 500,
                   fullscreen: false,
-                  title: "Calculation of smart deadlines",
+                  title: "Calculation of due dates",
                   actions: []
                 });
               }

@@ -15,7 +15,7 @@ After entering the URL to your iCal calendar in the preferences and setting esti
 First, you need to add the link to your iCal calendar. After you have activated a list, you can give an estimate for each card.
 ![](https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/card_estimation.PNG)
 
-Finally, click on "Calculate Smart Deadlines..." in the context menu of a desired list. In the new window click on "Run" to start the calculation.
+Finally, click on "Calculate due dates..." in the context menu of a desired list. In the new window click on "Run" to start the calculation.
 ![](https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/calculation.PNG)
 
 The generated appointments are displayed by clicking on a card or the board button.
