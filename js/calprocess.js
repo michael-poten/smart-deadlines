@@ -7,6 +7,11 @@ var calprocess = function() {
     card
   ) {
     let token = await t.get("board", "private", "token");
+    if (!token) {
+      return new Promise(async function(resolve, reject) {
+        resolve()
+      })
+    }
     let key = "5db50da477d5b9033e479892f742bf8d";
     return axios.put(
       "https://api.trello.com/1/cards/" +
@@ -20,21 +25,13 @@ var calprocess = function() {
     );
   };
 
-  let getCardsByListId = async function(t, listId) {
-    let token = await t.get("board", "private", "token");
-    let key = "5db50da477d5b9033e479892f742bf8d";
-    return await $.get(
-      "https://api.trello.com/1/lists/" +
-        listId +
-        "/cards?key=" +
-        key +
-        "&token=" +
-        token
-    );
-  };
-
   let removeDueDate = async function(t, card) {
     let token = await t.get("board", "private", "token");
+    if (!token) {
+      return new Promise(async function(resolve, reject) {
+        resolve()
+      })
+    }
     let key = "5db50da477d5b9033e479892f742bf8d";
     return $.ajax({
       url:
@@ -179,11 +176,11 @@ var calprocess = function() {
     },
     startDateCalculation: async function(t, listId, startDate, icsData) {
       return new Promise(async function(resolve, reject) {
-        let token = await t.get("board", "private", "token");
-        if (!token) {
-          reject("Please authorize Smart Deadlines (to set due dates)!");
-          return;
-        }
+        // let token = await t.get("board", "private", "token");
+        // if (!token) {
+        //   reject("Please authorize Smart Deadlines (to set due dates)!");
+        //   return;
+        // }
 
         let startDateForExtract = startDate.clone();
         startDateForExtract.startOf("day");
@@ -199,7 +196,6 @@ var calprocess = function() {
               return;
             }
 
-            // let cards = await getCardsByListId(t, listId);
             let cards = (await t.cards("all")).filter(t => t.idList === listId);
 
             let currentEventIndex = 0;

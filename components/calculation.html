@@ -54,7 +54,7 @@
                   v-model="useIcalCalendar"
               />
               <span for="useIcalCalendar">
-                Use iCal Calendar from settings
+                Use appointments from iCal-calendar URL
               </span>
             </div>
             <hr />
@@ -141,6 +141,9 @@
               </span>
 
               <span v-if="calculationStatus === 0">
+                <div v-if="!token" style="font-size: 0.7em; color: #dc6868">
+                  Please run the authorization to have due dates set automatically.
+                </div>
                 <button id="execute" class="mod-primary" @click="execute">
                   Run
                 </button>
@@ -293,6 +296,7 @@
             downloadIcsSuccess: false,
             useIcalCalendar: false,
             canUseIcalCalendar: false,
+            token: null
           },
           mounted() {
             this.startDateInput = moment().format("YYYY[-]MM[-]DD");
@@ -340,7 +344,7 @@
                 "exportServerName"
               );
 
-              var token = await t.get("board", "private", "token");
+              this.token = await t.get("board", "private", "token");
               var member = await t.member("all");
               var key = "5db50da477d5b9033e479892f742bf8d";
 
