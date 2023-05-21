@@ -56,6 +56,9 @@
               <span for="useIcalCalendar">
                 Use appointments from iCal-calendar URL
               </span>
+              <div v-if="!canUseIcalCalendar" style="font-size: 0.8em;">
+                <i style="font-size: 1.4em">i</i>Before you can use this feature, please set a URL to the iCal-calendar in the Power-Up settings first.
+              </div>
             </div>
             <hr />
             <div v-if="calculationStatus === 0">
@@ -141,8 +144,8 @@
               </span>
 
               <span v-if="calculationStatus === 0">
-                <div v-if="!token" style="font-size: 0.8em; color: #dc6868">
-                  Please run the authorization to have due dates set automatically.
+                <div v-if="!token" style="font-size: 0.8em;">
+                  <i style="font-size: 1.4em;">i</i>Please run the authorization to have due dates set automatically.
                 </div>
                 <button id="execute" class="mod-primary" @click="execute">
                   Run
