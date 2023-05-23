@@ -41,7 +41,7 @@ let getBadges = async function(t, isEditMode) {
       let appointmentsData = await t.get(id, "shared", "appointments");
       let appointments = appointmentsData ? appointmentsData.appointments : undefined;
       if (appointments && appointments.length > 0) {
-        let startTime = appointments[0].startDate.format("H.mm")
+        let startTime = moment(appointments[0].startDate).format("H.mm")
 
         let appointmentsBadge = {
           title: "Start time",
