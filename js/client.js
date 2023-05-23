@@ -2,8 +2,8 @@
 
 let GRAY_ICON =
   "https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/timelapse.svg";
-let COUNTER_GRAY_ICON =
-  "https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/counter.svg";
+let CLOCK_START_GRAY_ICON =
+  "https://raw.githubusercontent.com/michael-poten/smart-deadlines/master/images/clock-start.svg";
 
 let setCardEstimation = function(t, value) {
   t.set("card", "shared", "estimation", value);
@@ -40,11 +40,13 @@ let getBadges = async function(t, isEditMode) {
 
       let appointmentsData = await t.get(id, "shared", "appointments");
       let appointments = appointmentsData ? appointmentsData.appointments : undefined;
-      if (appointments) {
+      if (appointments && appointments.length > 0) {
+        let startTime = appointments[0].startDate.format("H.mm")
+
         let appointmentsBadge = {
-          title: "Appointment(s)",
-          text: appointments.length + " Appointment(s)",
-          icon: COUNTER_GRAY_ICON,
+          title: "Start time",
+          text: startTime,
+          icon: CLOCK_START_GRAY_ICON,
         };
         badges.push(appointmentsBadge);
       }
