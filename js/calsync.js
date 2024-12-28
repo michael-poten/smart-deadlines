@@ -49,7 +49,7 @@ var calsync = function() {
             } else {
               endDate = moment(event.end);
             }
-            
+
             let mustStartBeChanged = moment(startDate).isDST() != moment().isDST();
             let mustEndBeChanged = moment(endDate).isDST() != moment().isDST();
 
@@ -105,7 +105,7 @@ var calsync = function() {
                 event.rrule = rrule.RRule.fromString(rule);
               }
               event.rruleConverted = true;
-              
+
               let dates = event.rrule.between(
                 rangeStart.toDate(),
                 rangeEnd.toDate(),
@@ -162,8 +162,8 @@ var calsync = function() {
                 }
 
                 if (showRecurrence === true) {
-                  
-                  
+
+
                   if (mustStartBeChanged && moment(startDate).isDST() == moment().isDST()) {
                     if (moment().isDST()) {
                       startDate = moment(startDate).clone().subtract(1, "hours");
@@ -171,7 +171,7 @@ var calsync = function() {
                       startDate = moment(startDate).clone().add(1, "hours");
                     }
                   }
-                  
+
                   if (mustEndBeChanged && moment(endDate).isDST() == moment().isDST()) {
                     if (moment().isDST()) {
                       endDate = moment(endDate).clone().subtract(1, "hours");
@@ -179,7 +179,7 @@ var calsync = function() {
                       endDate = moment(endDate).clone().add(1, "hours");
                     }
                   }
-                  
+
                   events.push({
                     title: curEvent.summary,
                     description: curEvent.description,
@@ -209,6 +209,9 @@ var calsync = function() {
 
         resolve(events);
       });
+    },
+    parseIcalFile: function(icalFileData) {
+      return ical.parseICS(icalFileData)
     },
     downloadIcalCalendar: function(t, useBasicCalendar) {
       return new Promise(async function(resolve, reject) {
@@ -275,17 +278,17 @@ var calsync = function() {
           "private",
           "ownServerActive"
         );
-        
+
         let exportServer = await t.get("board", "private", "exportServer");
 
         let dataInput;
         if (generalExportEnabled) {
-          
+
           if (!exportServer) {
             reject("Error! Please set the URL to your Smart Deadlines-server!");
             return;
           }
-          
+
           let exportServerKey = await t.get(
             "board",
             "private",

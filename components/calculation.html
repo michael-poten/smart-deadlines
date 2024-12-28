@@ -49,15 +49,35 @@
                   type="checkbox"
                   id="useIcalCalendar"
                   name="useIcalCalendar"
-                  :disabled="calculationStatus >= 1 || !canUseIcalCalendar"
+                  :disabled="calculationStatus >= 1 || !canUseIcalCalendar || useIcalFile"
                   style="margin-left: 3px"
                   v-model="useIcalCalendar"
               />
               <span for="useIcalCalendar">
-                Use appointments from iCal-calendar
+                Use given iCal-calendar URL
               </span>
               <div v-if="!canUseIcalCalendar" style="font-size: 0.8em;">
                 <i style="font-size: 1.4em; padding-right: 10px;font-weight: bold;">i</i>Before you can use this feature, please set a URL to the iCal-calendar in the Power-Up settings first.
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <input
+                  type="checkbox"
+                  id="useIcalFile"
+                  name="useIcalFile"
+                  :disabled="calculationStatus >= 1 || useIcalCalendar"
+                  style="margin-left: 3px"
+                  v-model="useIcalFile"
+              />
+              <span for="useIcalCalendar">
+                Use iCal-calendar file
+              </span>
+              <div>
+                <input type="file" id="iCalUpload" ref="iCalUpload"
+                       @change="addFile" :accept="'text/calendar'" :disabled="calculationStatus >= 1 || useIcalCalendar || !useIcalFile">
+              </div>
+              <div v-if="noFileUploadedError && useIcalFile" style="font-size: 0.8em">
+                <i style="font-size: 1.4em; padding-right: 10px;font-weight: bold;">i</i>Please select a file
               </div>
             </div>
             <hr />
@@ -298,8 +318,11 @@
             errorText: null,
             downloadIcsSuccess: false,
             useIcalCalendar: false,
+            useIcalFile: false,
+            iCalFileData: null,
             canUseIcalCalendar: false,
-            token: null
+            token: null,
+            noFileUploadedError: true
           },
           mounted() {
             this.startDateInput = moment().format("YYYY[-]MM[-]DD");
@@ -320,7 +343,7 @@
                 "private",
                 "ownServerActive"
               );
-              
+
               this.exportServer = await t.get(
                 "board",
                 "private",
@@ -429,6 +452,24 @@
                 lastCalculatedDate: null
               });
             },
+            async addFile(event) {
+              let that = this;
+              this.noFileUploadedError = false
+              const file = event.target.files[0]
+
+              const reader = new FileReader();
+
+              reader.onload = function (e) {
+                that.iCalFileData = e.target.result;
+              };
+
+              reader.onerror = function () {
+                that.errorText = 'The file could not be read';
+              };
+
+              reader.readAsText(file);
+
+            },
             execute: async function() {
               let that = this;
 
@@ -458,15 +499,20 @@
 
               this.calculationStatus = 1;
 
-              await calsync()
-                .downloadIcalCalendar(t, !this.useIcalCalendar)
-                .then(async function(result) {
-                  that.icsData = result;
-                })
-                .catch(function(error) {
-                  that.errorText = error;
-                  that.breakLoop = true;
-                });
+              if (this.useIcalFile){
+                that.icsData = calsync().parseIcalFile(that.iCalFileData)
+              } else {
+                await calsync()
+                        .downloadIcalCalendar(t, !this.useIcalCalendar)
+                        .then(async function(result) {
+                          that.icsData = result;
+                        })
+                        .catch(function(error) {
+                          that.errorText = error;
+                          that.breakLoop = true;
+                        });
+              }
+
 
               if (!this.breakLoop) {
                 this.downloadIcsSuccess = true;
@@ -528,7 +574,7 @@
 
                 await calprocess()
                   .uploadIcsData(
-                    t, 
+                    t,
                     cal,
                     this.exportServer,
                     this.exportServerKey,

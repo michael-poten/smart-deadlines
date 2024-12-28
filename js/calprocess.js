@@ -115,18 +115,7 @@ var calprocess = function() {
       return cal;
     },
     downloadCsvData: function(csvLines) {
-      var blob;
-      if (navigator.userAgent.indexOf("MSIE 10") === -1) {
-        // chrome or firefox
-        blob = new Blob([csvLines], { type: "text/comma-separated-values" });
-      } else {
-        // ie
-        var bb = new BlobBuilder();
-        bb.append(csvLines);
-        blob = bb.getBlob(
-          "text/comma-separated-values;charset=" + document.characterSet
-        );
-      }
+      var blob = new Blob([csvLines], { type: "text/comma-separated-values" });
 
       saveAs(blob, "smart-deadlines.csv");
     },
@@ -134,16 +123,7 @@ var calprocess = function() {
       return new Promise(async function(resolve, reject) {
         let bodyFormData = new FormData();
 
-        var blob;
-        if (navigator.userAgent.indexOf("MSIE 10") === -1) {
-          // chrome or firefox
-          blob = new Blob([cal.calendar()], { type: "text/calendar" });
-        } else {
-          // ie
-          var bb = new BlobBuilder();
-          bb.append(cal.calendar());
-          blob = bb.getBlob("text/x-vCalendar;charset=" + document.characterSet);
-        }
+        var blob = new Blob([cal.calendar()], { type: "text/calendar" });
 
         bodyFormData.append("ics", blob, exportServerName + ".ics");
 
@@ -165,7 +145,7 @@ var calprocess = function() {
               "exportServerName",
               exportServerName
             );
-          
+
             resolve(exportServer + response.data.data.url);
           })
           .catch(function(error) {
