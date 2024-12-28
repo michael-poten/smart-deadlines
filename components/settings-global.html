@@ -8,22 +8,6 @@
       <div id="content">
         <div id="settings">
           <div>
-            <p>Link to iCal-calendar:</p>
-            <input type="text" id="linkToCal" v-model="linkToCal" />
-          </div>
-          <p>Distribute over several appointments:</p>
-          <input
-            type="checkbox"
-            id="isContinuous"
-            name="isContinuous"
-            style="margin-left: 3px"
-            v-model="isContinuous"
-          />
-          <p>Only appointments containing this title:</p>
-          <input type="text" id="patternToUse" v-model="patternToUse" />
-          <small>Empty uses all appointments.</small>
-          <div>
-            <hr />
             <div>
               <input
                 type="checkbox"
@@ -33,12 +17,12 @@
                 v-model="ownServerActive"
               />
               <h5 for="ownServerActive" style="display: inline">
-                Own Smart Deadlines server
+                Use (own) Smart Deadlines server
               </h5>
             </div>
             <div>
               <span>
-                Server:
+                Server URL:
               </span>
               <input
                 type="text"
@@ -61,6 +45,22 @@
               />
             </div>
           </div>
+          <div>
+            <p>Link to iCal-calendar:</p>
+            <input type="text" id="linkToCal" v-model="linkToCal" :disabled="!ownServerActive" />
+          </div>
+          <p>Distribute over several appointments:</p>
+          <input
+                  type="checkbox"
+                  id="isContinuous"
+                  name="isContinuous"
+                  :disabled="!ownServerActive"
+                  style="margin-left: 3px"
+                  v-model="isContinuous"
+          />
+          <p>Only appointments containing this title:</p>
+          <input type="text" id="patternToUse" v-model="patternToUse" :disabled="!ownServerActive" />
+          <small>Empty uses all appointments.</small>
           <p>
             <button
               id="save"

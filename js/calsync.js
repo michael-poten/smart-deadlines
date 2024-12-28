@@ -279,50 +279,39 @@ var calsync = function() {
           "ownServerActive"
         );
 
+        if (!generalExportEnabled) {
+          reject("Error! Please configure your smart deadlines server!");
+          return;
+        }
+
         let exportServer = await t.get("board", "private", "exportServer");
 
         let dataInput;
-        if (generalExportEnabled) {
 
-          if (!exportServer) {
-            reject("Error! Please set the URL to your Smart Deadlines-server!");
-            return;
-          }
-
-          let exportServerKey = await t.get(
-            "board",
-            "private",
-            "exportServerKey"
-          );
-
-          await axios({
-            method: "get",
-            url: exportServer + "/cors?url=" + linkToCal,
-            headers: {
-              token: exportServerKey
-            }
-          })
-            .then(function(result) {
-              that.dataInput = result.data;
-            })
-            .catch(function(error) {
-              that.errorText = "Could not connect to iCal-Url or to your Smart Deadlines-server!";
-            });
-        } else {
-          let linkToCalTmp = linkToCal
-          linkToCalTmp = linkToCalTmp.replace('https://', '')
-          linkToCalTmp = linkToCalTmp.replace('http://', '')
-          await axios({
-            method: "get",
-            url: "https://smart-deadlines.de/" + linkToCalTmp
-          })
-            .then(function(result) {
-              that.dataInput = result.data;
-            })
-            .catch(function(error) {
-              that.errorText = "Could not connect to iCal-server!";
-            });
+        if (!exportServer) {
+          reject("Error! Please set the URL to your Smart Deadlines-server!");
+          return;
         }
+
+        let exportServerKey = await t.get(
+          "board",
+          "private",
+          "exportServerKey"
+        );
+
+        await axios({
+          method: "get",
+          url: exportServer + "/cors?url=" + linkToCal,
+          headers: {
+            token: exportServerKey
+          }
+        })
+          .then(function(result) {
+            that.dataInput = result.data;
+          })
+          .catch(function(error) {
+            that.errorText = "Could not connect to iCal-Url or to your Smart Deadlines-server!";
+          });
 
         if (this.errorText) {
           reject(this.errorText);
