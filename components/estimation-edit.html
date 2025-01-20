@@ -26,6 +26,15 @@
             >
             <span style="margin-left: 12px;">
               <button
+                      id="addFiveMin"
+                      class="mod-primary"
+                      @click="addFiveMin"
+              >
+                + 5 min
+              </button>
+            </span>
+            <span>
+              <button
                 id="addQuarterHour"
                 class="mod-primary"
                 @click="addQuarterHour"
@@ -37,16 +46,6 @@
             <span>
               <button id="addHour" class="mod-primary" @click="addHour">
                 + 1 hour
-              </button>
-            </span>
-
-            <span>
-              <button
-                id="addMoreHours"
-                class="mod-primary"
-                @click="addMoreHours"
-              >
-                + 5 hours
               </button>
             </span>
 
@@ -117,6 +116,15 @@
                 ":" +
                 moment.utc(durationInMinutes.as("milliseconds")).format("mm")
               );
+            },
+            addFiveMin: function() {
+              this.estimation = this.estimation + 5;
+              if (!this.estimationData) {
+                this.estimationData = {};
+              }
+              this.estimationData.estimation = this.estimation;
+              this.estimationData.text = this.formatOfDuration(this.estimation);
+              t.set("card", "shared", "estimation", this.estimationData);
             },
             addQuarterHour: function() {
               this.estimation = this.estimation + 15;
