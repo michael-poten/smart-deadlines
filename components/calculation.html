@@ -335,7 +335,7 @@
             initData: async function() {
               let that = this;
 
-              this.canUseIcalCalendar = !!await t.get("board", "private", "linkToCal");
+              this.canUseIcalCalendar = !!await t.get("board", "private", "ownServerActive");
               this.useIcalCalendar = this.canUseIcalCalendar;
 
               this.generalExportEnabled = await t.get(

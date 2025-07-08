@@ -47,7 +47,7 @@
           </div>
           <div>
             <p>Link to iCal-calendar:</p>
-            <input type="text" id="linkToCal" v-model="linkToCal" />
+            <input type="text" id="linkToCal" v-model="linkToCal" :disabled="!ownServerActive" />
           </div>
           <p>Distribute over several appointments:</p>
           <input
